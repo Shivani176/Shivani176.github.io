@@ -1,47 +1,124 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Meta -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Project 2 — Image Homography & Warping (Full Report)</title>
   <meta name="description" content="Single-file HTML viewer for the full report with images. Drop the /report_assets folder next to this file on GitHub." />
+
+  <!-- Theme + Layout CSS (merged) -->
   <style>
-    :root { --bg:#0f1115; --fg:#e9eef6; --muted:#9aa3b2; --card:#161925; --line:#23283a; --accent:#7aa2ff; --radius:14px; --maxw: 980px; }
-    @media (prefers-color-scheme: light) { :root { --bg:#fafbfe; --fg:#111827; --muted:#4b5563; --card:#ffffff; --line:#e5e7eb; } }
+    /* ====== Global Dark/Light Theme + Nav ====== */
+:root{
+  /* Light beige palette */
+  --bg:#f6e0aa;        /* page background (beige) */
+  --fg:#2f2a23;        /* primary text (espresso) */
+  --muted:#6d6458;     /* secondary text (taupe) */
+  --card:#faedd6;      /* cards/panels (ivory) */
+  --line:#e6dccb;      /* borders (linen) */
+  --accent:#a36a2a;    /* links/buttons (warm amber) */
+  --radius:14px;
+  --maxw:980px;
+  --panel: var(--card);
+}
+
+/* Keep your existing body/typography rules.
+   The variables above will automatically recolor them. */
+
+/* Optional: make the sticky header airy over beige */
+header.site{
+  background: color-mix(in oklab, var(--bg) 72%, transparent);
+  border-bottom:1px solid var(--line);
+}
+
+/* Optional nice touches */
+figure img{ background:#f3ede2; }                 /* soft image backdrop */
+th{ background: color-mix(in oklab, #fffaf1 85%, #f0e6d6); } /* gentle table head */
+a{ color: var(--accent); }
+a:hover{ color: color-mix(in oklab, var(--accent) 80%, #5a3b1e); }
+.card,.panel{ box-shadow: 0 2px 10px rgba(165,140,100,0.08); }
+
+/* Lighter, airier header */
+header.site{
+  background: color-mix(in oklab, var(--bg) 72%, transparent);
+}
+
+
     html { scroll-behavior: smooth; }
-    body { margin:0; font:16px/1.65 system-ui,-apple-system,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); }
+    body {
+      margin:0; font:16px/1.65 system-ui,-apple-system,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg); color:var(--fg);
+    }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
-    header { position: sticky; top:0; z-index:10; backdrop-filter: blur(6px); background: color-mix(in oklab, var(--bg) 85%, transparent); border-bottom:1px solid var(--line); }
-    .nav { max-width: var(--maxw); margin:0 auto; height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 1rem; }
+
+    header.site {
+      position: sticky; top:0; z-index:10; backdrop-filter: blur(6px);
+      background: color-mix(in oklab, var(--bg) 85%, transparent);
+      border-bottom:1px solid var(--line);
+    }
+    .nav { max-width: var(--maxw); margin:0 auto; height:56px;
+      display:flex; align-items:center; justify-content:space-between; padding:0 1rem; }
     .brand { font-weight:700; }
     .links { display:flex; gap:.75rem; }
     .links a { color: var(--muted); padding:.3rem .6rem; border-radius:8px; }
-    .links a:hover { color:var(--fg); background: color-mix(in oklab, var(--card) 70%, transparent); text-decoration:none; }
+    .links a:hover { color:var(--fg);
+      background: color-mix(in oklab, var(--card) 70%, transparent); text-decoration:none; }
+
     main { max-width: var(--maxw); margin: 0 auto; padding: 1rem; }
     .card { background: var(--card); border:1px solid var(--line); border-radius: var(--radius); padding: 1rem; }
-    h1 { font-size: clamp(1.6rem, 1.2rem + 2vw, 2.4rem); margin: .75rem 0 .25rem; }
-    h2 { font-size: clamp(1.2rem, 1rem + 1vw, 1.6rem); margin: 0 0 .25rem; }
-    .muted { color: var(--muted); }
-    .stack > * + * { margin-top: 1rem; }
-    .pages { display:grid; gap: 1rem; }
-    figure { margin:0; }
-    img.page { width:100%; height:auto; display:block; border:1px solid var(--line); border-radius: 12px; background:#000; }
-    figcaption { color: var(--muted); font-size: .9rem; margin-top: .5rem; text-align:center; }
-    details { border:1px dashed var(--line); border-radius: 10px; padding:.75rem 1rem; background: color-mix(in oklab, var(--card) 70%, transparent); }
+
+    /* ====== Your original utilities (kept) ====== */
+    :root {
+      /* keep your semantic tokens for components below */
+      --fg2:#1f2937; --muted2:#6b7280; --accent2:#2563eb; /* unused in dark, but harmless */
+    }
+    h1,h2,h3{line-height:1.2}
+    h1{font-size:clamp(1.6rem,1.2rem + 2vw,2.4rem); margin:.75rem 0 .25rem}
+    h2{font-size:clamp(1.2rem,1rem + 1vw,1.6rem); margin:2rem 0 .5rem}
+    h3{font-size:1.15rem; margin:1.3rem 0 .4rem}
+    p{margin:.5rem 0}
+    code,pre,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+
+    .muted{color:var(--muted)}
+    .note{background:color-mix(in oklab, var(--accent) 10%, var(--card)); border-left:4px solid var(--accent);
+          padding:.75rem 1rem; border-radius:10px}
+
+    .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:1rem}
+    .grid{display:grid; gap:1rem}
+    .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); align-items:start}
+    figure{margin:0}
+    figure img{width:100%; height:auto; border-radius:8px; border:1px solid var(--line); display:block; background:#000}
+    figcaption{font-size:.9rem; color:var(--muted); margin-top:.4rem}
+    .kpi{display:flex; flex-wrap:wrap; gap:.75rem; margin-top:.5rem}
+    .tag{background:color-mix(in oklab, var(--card) 80%, transparent); border:1px solid var(--line);
+         border-radius:999px; padding:.25rem .6rem; font-size:.85rem}
+    table{width:100%; border-collapse:collapse; font-size:.98rem; margin:.4rem 0 1rem}
+    th,td{border-bottom:1px solid var(--line); padding:.5rem .4rem; text-align:left}
+    th{background:color-mix(in oklab, var(--card) 70%, transparent)}
+    .center{text-align:center}
+    .equation{overflow-x:auto; padding:.5rem 0}
+
     footer { border-top:1px solid var(--line); margin: 2rem 0 1rem; padding-top:1rem; color: var(--muted); }
-    .note { font-size:.92rem; }
-    .toc { display:flex; flex-wrap:wrap; gap:.5rem; }
-    .toc a { border:1px solid var(--line); border-radius:999px; padding:.25rem .6rem; color:var(--muted); }
-    .toc a:hover { color:var(--fg); }
+    @media print{
+      .note{border:1px solid color-mix(in oklab, var(--accent) 30%, white)}
+      a[href^="http"]::after{content:" (" attr(href) ")"; font-size:.9em; color:var(--muted)}
+      header.site{position:static}
+    }
   </style>
+
+  <!-- MathJax (keep from your file) -->
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]}};</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
+
 <body>
-  <header>
+  <!-- Sticky Navigation -->
+  <header class="site">
     <div class="nav">
       <div class="brand">Project 2 Report</div>
       <nav class="links" aria-label="Sections">
-        <a href="#intro">Intro</a>
         <a href="#part1">Part 1</a>
         <a href="#part2">Part 2</a>
         <a href="#part3">Part 3</a>
@@ -49,112 +126,678 @@
     </div>
   </header>
 
-  <main class="stack">
-    <section id="intro" class="card stack">
-      <h1>Computer Vision — Project 2: Image Homography and Warping</h1>
-      <p class="muted">Author: <strong>Shivani Kalal</strong>. This HTML shows the report organized <em>by part</em> (not page-by-page). We are starting with <strong>Part 1</strong>. Images below are extracted figures from the PDF for cleaner, part-level presentation.</p>
+  <!-- Main content -->
+  <main>
+      <h1>Image Homography &amp; Warping — Full Report</h1>
+      <p class="muted">Single-page viewer with sticky navigation. Place images in <code>report_assets/</code>.</p>
+      <div class="kpi">
+        <span class="tag">Author: <strong>Shivani Kalal</strong></span>
+        <span class="tag">Course: Computer Vision — Project 2</span>
+      </div>
     </section>
 
-    <!-- PART 1 ONLY -->
-    <section id="part1" class="card stack">
-      <h2>Part 1 — Image Homography Estimation</h2>
+    <!-- Your existing Part 1 content starts here -->
+    <section id="part1" class="panel" style="margin-top:1rem;">
+      <!-- 🔽 Paste your existing Part 1 sections below (unchanged) -->
+      <h2>Part 1: Image Homography Estimation</h2>
+      <!-- ... your existing Part 1 HTML ... -->
 
-      <section class="stack">
-        <h3>Objective</h3>
-        <p>Estimate a planar projective transform (homography) to rectify or map between two views of the same plane. Demonstrate correct rectification and warping on real images.</p>
-      </section>
+    <p class="muted">Rectifying planar surfaces via DLT homography estimation and inverse warping.</p>
+    <div class="kpi">
+      <span class="tag">Author: <strong>Shivani Kalal</strong></span>
+      <span class="tag">Course: Computer Vision — Project 2</span>
+    </div>
+  </header>
 
-      <section class="stack">
-        <h3>Method (DLT + Normalization)</h3>
-        <ul>
-          <li>Collect ≥4 point correspondences between source and target planes.</li>
-          <li>Build the linear system \(Ah=0\) and solve via SVD for \(h\) (last singular vector).</li>
-          <li>Use coordinate normalization for numerical stability; denormalize at the end.</li>
-          <li>Apply <em>inverse mapping</em> with bilinear interpolation to avoid holes.</li>
-        </ul>
-      </section>
+  <section>
+    <h2>1. Introduction</h2>
+    <p>
+      This part implements homography estimation to rectify a tilted, perspective-distorted view of a <em>planar</em> surface
+      (e.g., documents, posters, framed art) into a fronto-parallel image. The pipeline is:
+      select four corner correspondences → estimate \(3\times 3\) homography \(H\) via DLT → perform inverse mapping with interpolation.
+    </p>
+  </section>
 
-      <section class="stack">
-        <h3>Implementation Notes</h3>
-        <ul>
-          <li>Output bounds computed from warped corner extents to size the canvas.</li>
-          <li>Masking & optional feathered blending to handle seams at boundaries.</li>
-          <li>Assumes a <em>planar</em> scene region; perspective camera model.</li>
-        </ul>
-      </section>
+  <section>
+    <h2>2. Methodology</h2>
 
-      <section class="stack">
-        <h3>Key Figures</h3>
-        <div class="pages" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
-          <!-- Scene 1-a -->
-          <figure>
-            <a href="report_assets/scene_1-a_comparison_20251021_092246.jpg" target="_blank" rel="noopener">
-              <img class="page" src="report_assets/scene_1-a_comparison_20251021_092246.jpg" alt="Scene 1-a: original vs rectified comparison" />
-            </a>
-            <figcaption>Scene 1-a — Original vs Rectified (comparison)</figcaption>
-          </figure>
-          <figure>
-            <a href="report_assets/scene_1-a_rectified_20251021_092246.jpg" target="_blank" rel="noopener">
-              <img class="page" src="report_assets/scene_1-a_rectified_20251021_092246.jpg" alt="Scene 1-a: rectified result" />
-            </a>
-            <figcaption>Scene 1-a — Rectified result</figcaption>
-          </figure>
+    <h3>2.1 Point Correspondence Selection</h3>
+    <p>
+      Four points are clicked on the planar surface in the source image in the order:
+      top-left (P1), top-right (P2), bottom-right (P3), bottom-left (P4).
+      These map to the corners of an axis-aligned rectangle in the rectified view.
+    </p>
 
-          <!-- Scene 1-b -->
-          <figure>
-            <a href="report_assets/scene_1-b_comparison_20251021_095228.jpg" target="_blank" rel="noopener">
-              <img class="page" src="report_assets/scene_1-b_comparison_20251021_095228.jpg" alt="Scene 1-b: original vs rectified comparison" />
-            </a>
-            <figcaption>Scene 1-b — Original vs Rectified (comparison)</figcaption>
-          </figure>
-          <figure>
-            <a href="report_assets/scene_1-b_rectified_20251021_095228.jpg" target="_blank" rel="noopener">
-              <img class="page" src="report_assets/scene_1-b_rectified_20251021_095228.jpg" alt="Scene 1-b: rectified result" />
-            </a>
-            <figcaption>Scene 1-b — Rectified result</figcaption>
-          </figure>
+    <h3>2.2 Homography Estimation (DLT)</h3>
+    <p>
+      Given correspondences \((x,y)\rightarrow(u,v)\), we solve for \(H\) (up to scale) using SVD on the linear
+      system built from the DLT constraints and normalize so that \(H_{33}=1\).
+    </p>
+    <div class="equation panel">
+      <p class="center">Projective mapping between planes:</p>
+      <p class="center">
+        \[
+          \begin{bmatrix} u \\ v \\ 1 \end{bmatrix}
+          =
+          \begin{bmatrix}
+          h_{11} & h_{12} & h_{13} \\
+          h_{21} & h_{22} & h_{23} \\
+          h_{31} & h_{32} & h_{33}
+          \end{bmatrix}
+          \begin{bmatrix} x \\ y \\ 1 \end{bmatrix}.
+        \]
+      </p>
+      <p class="muted center">Four non-collinear correspondences determine the 8 d.o.f. of \(H\) (scale fixed).</p>
+    </div>
 
-          <!-- Scene 1-c -->
-          <figure>
-            <a href="report_assets/scene_1-c_comparison_20251021_095901.jpg" target="_blank" rel="noopener">
-              <img class="page" src="report_assets/scene_1-c_comparison_20251021_095901.jpg" alt="Scene 1-c: original vs rectified comparison" />
-            </a>
-            <figcaption>Scene 1-c — Original vs Rectified (comparison)</figcaption>
-          </figure>
-          <figure>
-            <a href="report_assets/scene_1-c_rectified_20251021_095901.jpg" target="_blank" rel="noopener">
-              <img class="page" src="report_assets/scene_1-c_rectified_20251021_095901.jpg" alt="Scene 1-c: rectified result" />
-            </a>
-            <figcaption>Scene 1-c — Rectified result</figcaption>
-          </figure>
+    <h3>2.3 Image Warping (Inverse Mapping)</h3>
+    <p>
+      For each output pixel \((u,v)\), its source location \((x,y)\) is obtained using \(H^{-1}\), and the color
+      is sampled by bilinear interpolation. This avoids holes that forward mapping would create.
+      The implementation uses <code>cv2.remap</code> for efficiency.
+    </p>
 
-          <!-- Scene 2-a -->
-          <figure</h3>
-        <ul>
-          <li>Rectification successfully removes perspective distortion on planar targets.</li>
-          <li>Stable solutions with normalized DLT and RANSAC (if outliers present).</li>
-          <li>Clean warps with inverse mapping + bilinear interpolation.</li>
-        </ul>
-      </section>
-    </section>
+    <h3>2.4 Output Dimensions</h3>
+    <p>
+      The output rectangle size is estimated by averaging opposite edge lengths of the selected quadrilateral.
+      When foreshortening is severe (opposite edges differ by &gt; 30%), a manual override is used:
+      we adopt the aspect ratio from a frontal reference of the same object to compute a consistent width/height.
+    </p>
+    <div class="note">
+      <strong>Manual height from reference ratio:</strong>
+      \( \text{Height} = \dfrac{\text{Width}}{\text{Reference Aspect Ratio}} \).
+    </div>
+  </section>
 
-    <!-- Placeholders for later parts -->
-    <section id="part2" class="card stack">
-      <h2>Part 2 — AR Poster Replacement</h2>
-      <p class="muted">(Coming next) We will add figures and a short narrative for Part 2 here.</p>
-    </section>
+  <section>
+    <h2>3. Results</h2>
+    <p>
+      The method was evaluated on five images across two scenes (floral tapestry and bird tapestry) at different angles.
+      For each, we show the <em>original with clicked corners</em> and the <em>rectified output</em>.
+    </p>
 
-    <section id="part3" class="card stack">
-      <h2>Part 3 — Warping Comparison (Triangular Mesh vs TPS)</h2>
-      <p class="muted">(To be added) Comparison figures and notes will appear here.</p>
-    </section>
+    <!-- Scene 1-a -->
+    <h3>3.1 Scene 1-a — Floral Tapestry (Frontal View)</h3>
+    <div class="grid two">
+      <figure>
+        <img src="report_assets/scene_1-a_comparison_20251021_092246.jpg" alt="Scene 1-a: original with correspondences" />
+        <figcaption><strong>Before:</strong> Original image with P1–P4.</figcaption>
+      </figure>
+      <figure>
+        <img src="report_assets/scene_1-a_rectified_20251021_092246.jpg" alt="Scene 1-a: rectified output" />
+        <figcaption><strong>After:</strong> Rectified output (automatic sizing; aspect ≈ 0.897).</figcaption>
+      </figure>
+    </div>
+    <table>
+      <thead><tr><th>Edge</th><th>Length (px)</th></tr></thead>
+      <tbody>
+        <tr><td>Top</td><td>2479.93</td></tr>
+        <tr><td>Bottom</td><td>2397.23</td></tr>
+        <tr><td>Left</td><td>2696.32</td></tr>
+        <tr><td>Right</td><td>2738.01</td></tr>
+        <tr><td class="muted">Opposite-edge difference</td><td class="muted">~2% (consistent)</td></tr>
+        <tr><td><strong>Output</strong></td><td>2439 × 2717 (auto)</td></tr>
+      </tbody>
+    </table>
 
-    <footer>
-      <div>© <span id="year"></span> Shivani Kalal • Part-by-part report</div>
-    </footer>
-  </main>
+    <!-- Scene 1-b -->
+    <h3>3.2 Scene 1-b — Floral Tapestry (Extreme Angle)</h3>
+    <div class="grid two">
+      <figure>
+        <img src="report_assets/scene_1-b_comparison_20251021_095228.jpg" alt="Scene 1-b: original with correspondences" />
+        <figcaption><strong>Before:</strong> Extreme foreshortening; P1–P4 shown.</figcaption>
+      </figure>
+      <figure>
+        <img src="report_assets/scene_1-b_rectified_20251021_095228.jpg" alt="Scene 1-b: rectified output" />
+        <figcaption><strong>After:</strong> Rectified with <em>manual</em> size (aspect from 1-a).</figcaption>
+      </figure>
+    </div>
+    <table>
+      <thead><tr><th>Edge</th><th>Length (px)</th></tr></thead>
+      <tbody>
+        <tr><td>Top</td><td>1543.85</td></tr>
+        <tr><td>Bottom</td><td>1535.36</td></tr>
+        <tr><td>Left</td><td>2070.52</td></tr>
+        <tr><td>Right</td><td>3886.08</td></tr>
+        <tr><td class="muted">Opposite-edge difference</td><td class="muted">61% → manual override</td></tr>
+        <tr><td>Auto (incorrect)</td><td>1540 × 2978 (ratio 0.517)</td></tr>
+        <tr><td><strong>Manual</strong></td><td><strong>450 × 500</strong> (ratio ≈ 0.900), using ref aspect 0.897</td></tr>
+      </tbody>
+    </table>
 
-  <!-- Note: keep the report_assets/ directory (PNG images) alongside this HTML file on GitHub. -->
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <!-- Scene 1-c -->
+    <h3>3.3 Scene 1-c — Floral Tapestry (Side Angle)</h3>
+    <div class="grid two">
+      <figure>
+        <img src="report_assets/scene_1-c_comparison_20251021_095901.jpg" alt="Scene 1-c: original with correspondences" />
+        <figcaption><strong>Before:</strong> Most extreme angle; large edge asymmetry.</figcaption>
+      </figure>
+      <figure>
+        <img src="report_assets/scene_1-c_rectified_20251021_095901.jpg" alt="Scene 1-c: rectified output" />
+        <figcaption><strong>After:</strong> Rectified with <em>manual</em> size (500×560) using ref aspect 0.897.</figcaption>
+      </figure>
+    </div>
+    <table>
+      <thead><tr><th>Edge</th><th>Length (px)</th></tr></thead>
+      <tbody>
+        <tr><td>Top</td><td>1112.71</td></tr>
+        <tr><td>Bottom</td><td>1221.69</td></tr>
+        <tr><td>Left</td><td>3645.51</td></tr>
+        <tr><td>Right</td><td>1802.81</td></tr>
+        <tr><td class="muted">Opposite-edge difference</td><td class="muted">68% → manual override</td></tr>
+        <tr><td>Auto (incorrect)</td><td>1167 × 2724 (ratio 0.428)</td></tr>
+        <tr><td><strong>Manual</strong></td><td><strong>500 × 560</strong> (ratio ≈ 0.893), using ref aspect 0.897</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Scene 2-a -->
+    <h3>3.4 Scene 2-a — Bird Tapestry (Extreme Angle)</h3>
+    <div class="grid two">
+      <figure>
+        <img src="report_assets/scene_2-a_comparison_20251021_100734.jpg" alt="Scene 2-a: original with correspondences" />
+        <figcaption><strong>Before:</strong> Extreme side view; P1–P4 marked.</figcaption>
+      </figure>
+      <figure>
+        <img src="report_assets/scene_2-a_rectified_20251021_100734.jpg" alt="Scene 2-a: rectified output" />
+        <figcaption><strong>After:</strong> Rectified with <em>manual</em> size (400×620) using Scene 2-b aspect 0.645.</figcaption>
+      </figure>
+    </div>
+    <table>
+      <thead><tr><th>Edge</th><th>Length (px)</th></tr></thead>
+      <tbody>
+        <tr><td>Top</td><td>1088.24</td></tr>
+        <tr><td>Bottom</td><td>1142.85</td></tr>
+        <tr><td>Left</td><td>3890.36</td></tr>
+        <tr><td>Right</td><td>2220.93</td></tr>
+        <tr><td class="muted">Opposite-edge difference</td><td class="muted">55% → manual override</td></tr>
+        <tr><td>Auto (incorrect)</td><td>1116 × 3056 (ratio 0.365)</td></tr>
+        <tr><td><strong>Manual</strong></td><td><strong>400 × 620</strong> (ratio 0.645), using ref aspect 0.645</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Scene 2-b -->
+    <h3>3.5 Scene 2-b — Bird Tapestry (Frontal View)</h3>
+    <div class="grid two">
+      <figure>
+        <img src="report_assets/scene_2-b_comparison_20251021_100119.jpg" alt="Scene 2-b: original with correspondences" />
+        <figcaption><strong>Before:</strong> Near-frontal; P1–P4 shown.</figcaption>
+      </figure>
+      <figure>
+        <img src="report_assets/scene_2-b_rectified_20251021_100119.jpg" alt="Scene 2-b: rectified output" />
+        <figcaption><strong>After:</strong> Rectified (automatic; aspect ≈ 0.645).</figcaption>
+      </figure>
+    </div>
+    <table>
+      <thead><tr><th>Edge</th><th>Length (px)</th></tr></thead>
+      <tbody>
+        <tr><td>Top</td><td>2507.56</td></tr>
+        <tr><td>Bottom</td><td>2346.50</td></tr>
+        <tr><td>Left</td><td>3777.89</td></tr>
+        <tr><td>Right</td><td>3746.39</td></tr>
+        <tr><td class="muted">Opposite-edge difference</td><td class="muted">&lt; 5% (consistent)</td></tr>
+        <tr><td><strong>Output</strong></td><td>2427 × 3762 (auto) — portrait aspect ≈ 0.645</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>4. Discussion: Why Homography Works</h2>
+    <p>
+      Homography models a projective mapping between any two planes in 3D under a pinhole camera,
+      so a single matrix \(H\) can remove perspective effects for <em>planar</em> regions.
+      It preserves straight lines and is valid for arbitrary viewpoints as long as the surface is planar
+      and the four selected points are accurate and non-collinear.
+    </p>
+    <p>
+      The experiments show that automatic output sizing works well for mild perspective (small opposite-edge differences),
+      while severe foreshortening requires a manual size that respects the object’s true aspect ratio.
+      Using a frontal reference gives consistent results across views of the same object.
+    </p>
+  </section>
+
+  <section>
+    <h2>5. Conclusion</h2>
+    <p>
+      The DLT-based homography with inverse warping reliably rectifies planar surfaces across viewpoints.
+      Combining automatic size estimation with a manual override (driven by reference aspect ratios) yields
+      robust outputs for both frontal and extreme angles.
+    </p>
+  </section>
+
+  <header class="panel">
+
+    <section id="part2" class="panel">
+    <h1>Part 2: AR Poster Replacement</h1>
+    <p class="muted">Using homography (from Part 1) to replace a poster in-the-wild with new content and blend it realistically.</p>
+    <div class="kpi">
+      <span class="tag">Author: <strong>Shivani Kalal</strong></span>
+      <span class="tag">Course: Computer Vision — Project 2</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>My Application Idea</h2>
+    <p>
+      For Part 2, I made an <strong>AR poster replacement program</strong> that can take any poster or paper on a wall and replace it with a different image. It's like Photoshop, but using the core homography math from Part 1.
+    </p>
+    <p>
+      The goal was to take a photo of a bulletin board and virtually replace one of the posters with a Mental Health awareness poster.
+    </p>
+  </section>
+
+  <section>
+    <h2>How It Works</h2>
+
+    <h3>1. Load the images</h3>
+    <p>
+      First, I load two images - the original scene (the bulletin board photo) and the replacement poster (the Mental Health poster I want to insert).
+    </p>
+
+    <h3>2. Select 4 corner points</h3>
+    <p>
+      I click on the 4 corners of the poster I want to replace. The program shows red dots and connects them with lines so I can see what I selected.
+    </p>
+
+    <h3>3. Calculate the homography matrix</h3>
+    <p>
+      Using the DLT algorithm from Part 1, the program figures out the math needed to warp my replacement poster to match the perspective of the real poster in the photo.
+    </p>
+
+    <h3>4. Warp the replacement image</h3>
+    <p>
+      The program bends and transforms my replacement poster so it looks like it's at the same angle as the original poster. This uses inverse mapping so there are no holes in the image.
+    </p>
+
+    <figure style="max-width:420px;">
+    <img src="report_assets/ar_poster_warped_content.jpg"
+        alt="Warped replacement poster aligned to the scene quadrilateral"
+        style="width:60%; height:auto;">
+    <figcaption>Warped replacement poster in scene coordinates (inverse mapping).</figcaption>
+    </figure>
+
+
+    <h3>5. Blend it into the scene</h3>
+    <p>
+      Finally, the program smoothly blends the warped poster into the bulletin board photo. I used something called "feathered blending" which makes the edges smooth instead of sharp and obvious.
+    </p>
+
+    <div class="grid two" style="margin-top:.6rem;">
+      <figure style="max-width:500px;">
+        <img src="report_assets/ar_poster_process.png" alt="Process panels: selection, warp, mask, composite">
+        <figcaption>Process overview: corner selection → homography warp → feathered mask → composite.</figcaption>
+      </figure>
+      <figure style="max-width:500px;">
+        <img src="report_assets/ar_poster_comparison.png" alt="Before/After comparison of poster replacement">
+        <figcaption>Before vs. After comparison panel.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>What Worked Well</h2>
+    <ul>
+      <li><strong>The homography was super accurate</strong><br>
+        When I checked the reprojection error, it was basically 0.000 pixels. This means the math was perfect and my replacement poster lined up exactly where it should. The DLT code from Part 1 worked great without any changes.
+      </li>
+      <li><strong>The perspective looks realistic</strong><br>
+        The replacement poster looks like it's really sitting on the bulletin board at the same angle. You can't tell it was added digitally - it matches the perspective perfectly.
+      </li>
+      <li><strong>Feathered blending</strong><br>
+        At first, I just pasted the warped image directly and it had harsh edges that looked fake. But when I added Gaussian blur to the mask (making the edges gradually fade), it looked way more realistic. The poster blends smoothly with the background.
+      </li>
+      <li><strong>The interactive clicking was easy</strong><br>
+        The point selection tool worked great. I could see exactly where I was clicking with the red dots and lines, so I didn't mess up the corners.
+      </li>
+      <li><strong>Quick warping and blending</strong><br>
+        Even though the images are pretty big (960x1280 pixels), the whole warping and blending only took about 2 seconds. Using NumPy arrays and OpenCV made it efficient.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Challenges I Faced</h2>
+
+    <h3>Problem 1: Ugly hard edges</h3>
+    <p>
+      At first, my AR poster looked really fake because you could see the exact rectangle where I pasted it. The edges were super sharp and obvious.
+    </p>
+    <p><strong>How I fixed it:</strong> I added feathered blending using Gaussian blur on the mask. Instead of the mask being just 0s and 1s (black and white), the blur made it gradually fade at the edges. I tried different blur sizes and found that 15 pixels worked best - smooth enough to look natural but not so blurry that it looked weird.</p>
+
+    <figure style="max-width:420px;">
+    <img src="report_assets/before_gauss.png" alt="Feathered mask effect to fix sharp edges"
+        style="width:60%; height:auto;">
+    <figcaption>Uneven edges and cuts - before feathered blending.</figcaption>
+    </figure>
+
+    <h3>Problem 2: Clicking the right corners</h3>
+    <p>
+      When the poster is at an angle, it's kind of hard to click exactly on the corners. If you're even a little off, the whole thing looks warped wrong.
+    </p>
+    <p><strong>How I fixed it:</strong> The visual feedback really helped - seeing the red dots and lines as I clicked let me double-check I got the right spots. The instructions also helped by telling me which order to click (top-left, top-right, bottom-right, bottom-left).</p>
+
+    <h3>Problem 3: Different lighting</h3>
+    <p>
+      I was worried that my replacement poster would look weird because it might have different lighting than the bulletin board photo. Like if one is bright and one is dark, it would be obvious.
+    </p>
+    <p><strong>What happened:</strong> I got kind of lucky - my Mental Health poster's blue color matched the bulletin board lighting pretty well. But if I had more time, I would add code to automatically adjust the colors and brightness to match better.</p>
+
+    <h3>Problem 4: Making sure the image doesn't get blurry</h3>
+    <p>
+      When you warp images, sometimes they can get blurry or pixelated, especially if you're rotating them a lot.
+    </p>
+    <p><strong>How I fixed it:</strong> I used bilinear interpolation (<code>cv2.INTER_LINEAR</code>) which is a good middle ground - it keeps the image looking sharp without being too slow. There's also cubic interpolation which is even better quality but slower.</p>
+  </section>
+
+  <section>
+    <h2>What I Learned</h2>
+    <ul>
+      <li><strong>Homography is really versatile:</strong> The same math that straightened out a tilted document in Part 1 can also be used to add virtual objects into photos. That's pretty cool! It shows that one piece of math can solve many different problems.</li>
+      <li><strong>Blending is just as important as warping:</strong> Even if your math is perfect, if you just paste the image with hard edges, it looks fake. The blending technique makes a huge difference in whether it looks realistic or not.</li>
+      <li><strong>Why we use inverse mapping:</strong> I understand now why we go backwards (from output to input) instead of forwards. Going forwards leaves holes, but going backwards makes sure every pixel gets a color.</li>
+      <li><strong>Homography only works on flat things:</strong> This worked great because the bulletin board is flat. But if I tried to put a poster on a curved wall or a round bottle, homography wouldn't work - I'd need different math for that.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>My Results</h2>
+    <p>
+      The final result looks really good! In the before/after comparison, you can see that:
+    </p>
+    <ul>
+      <li>The Mental Health poster perfectly matches the angle of the bulletin board</li>
+      <li>The edges blend smoothly - no harsh lines</li>
+      <li>It looks like it was actually there when the photo was taken</li>
+      <li>The perspective is correct (not stretched or distorted)</li>
+    </ul>
+
+    <div class="grid two">
+      <figure>
+        <img src="report_assets/ar_poster_comparison.png" alt="Before/After comparison">
+        <figcaption>Before/After comparison of the AR replacement.</figcaption>
+      </figure>
+      <figure>
+        <img src="report_assets/ar_poster_final_result.jpg" alt="Final AR composite">
+        <figcaption>Final composite with feathered blending.</figcaption>
+      </figure>
+    </div>
+
+    <div class="note" style="margin-top:.9rem;">
+      <strong>Numbers:</strong><br>
+      Reprojection error: 0.000px (perfect!)<br>
+      Time to process: about 2 seconds<br>
+      Output size: 960×1280 pixels
+    </div>
+  </section>
+
+  <section>
+    <h2>Conclusion</h2>
+    <p>
+      I successfully created an AR poster replacement system using homography from Part 1. The Mental Health poster looks naturally placed on the bulletin board with correct perspective and smooth blending.
+    </p>
+    <p>
+      The biggest lessons were that accurate math + good blending = realistic results, and that sometimes simple techniques (like Gaussian blur for edges) can make a huge difference in how real something looks.
+    </p>
+    <p>
+      If I had to take this task further, I would add automatic color/lighting adjustment to match the scene better or away to undo/redo corner selections if I mess up.
+    </p>
+  </section>
+  </section>
+<header class="panel">
+    <section id="part3" class="panel"></section>
+    <h1>Part 3: Warping Comparison</h1>
+    <p class="muted">Comparing triangular mesh warping (piecewise affine) and Thin Plate Spline (TPS) warping on the same inputs.</p>
+    <div class="kpi">
+      <span class="tag">Author: <strong>Shivani Kalal</strong></span>
+      <span class="tag">Course: Computer Vision — Project 2</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Introduction</h2>
+    <p>
+      In Part 3, I compared two different image warping techniques:
+    </p>
+    <ol>
+      <li><strong>Triangular Mesh Warping</strong> (Piecewise Affine)</li>
+      <li><strong>Thin Plate Spline (TPS) Warping</strong></li>
+    </ol>
+    <p>
+      The goal was to understand how each method works and when to use them. Tested both methods on handwritten digits to see the differences in visual quality, speed, and smoothness.
+    </p>
+  </section>
+
+  <section>
+    <h2>How Each Method Works</h2>
+
+    <h3>Triangular Mesh Warping</h3>
+    <p>
+      This method breaks the image into triangles and warps each triangle separately:
+    </p>
+    <ul>
+      <li>First, it connects the control points with triangles (using Delaunay triangulation)</li>
+      <li>Then, it warps each triangle independently using simple math (affine transformations)</li>
+      <li>Each triangle is like a separate piece that gets stretched or rotated</li>
+      <li>Fast but can create visible seams where triangles meet</li>
+    </ul>
+
+    <h3>Thin Plate Spline (TPS) Warping</h3>
+    <p>
+      This method treats the image like bending a thin metal sheet:
+    </p>
+    <ul>
+      <li>It calculates one smooth transformation for the whole image</li>
+      <li>Uses something called radial basis functions (like ripples spreading from each control point)</li>
+      <li>Creates a smooth, continuous deformation across the entire image</li>
+      <li>Slower but produces very smooth results with no visible seams</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>My Test Results</h2>
+
+    <h3>Test 1: Digit 3</h3>
+    <p><strong>Setup:</strong></p>
+    <ul>
+      <li>Source: digit 3-a → Target: digit 3-b</li>
+      <li>Control Points: 20 points</li>
+      <li>Points placed on: top curve, middle junction, bottom curve, and edges</li>
+    </ul>
+
+    <p><strong>Results:</strong></p>
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Time</th><th>Quality</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Triangular Mesh</td><td>0.0104s</td><td>Some blockiness visible</td></tr>
+        <tr><td>TPS</td><td>0.0431s</td><td>Very smooth curves</td></tr>
+        <tr><td><em>Speed Difference</em></td><td colspan="2">TPS was 4.14× slower; TPS looked better</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid two">
+      <figure>
+        <img src="report_assets/digit_3-a_to_digit_3-b_comparison_20251021_064556.png" alt="Digit 3: 4-panel comparison (source pts, target pts, mesh, TPS)">
+        <figcaption><strong>Figure 1:</strong> Digit 3 warping comparison (top-left: source with control points; top-right: target with control points; bottom-left: triangular mesh; bottom-right: TPS).</figcaption>
+      </figure>
+      <div class="grid two">
+        <figure>
+          <img src="report_assets/digit_3-a_to_digit_3-b_triangular_20251021_064556.jpg" alt="Digit 3: Triangular mesh result">
+          <figcaption>Triangular mesh result (0.0104s).</figcaption>
+        </figure>
+        <figure>
+          <img src="report_assets/digit_3-a_to_digit_3-b_tps_20251021_064556.jpg" alt="Digit 3: TPS result">
+          <figcaption>TPS result (0.0431s).</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <p><strong>Observations:</strong></p>
+    <ul>
+      <li>Both methods successfully warped the digit 3 to match the target orientation</li>
+      <li>Triangular mesh was much faster but had visible angular edges, especially in the curved parts</li>
+      <li>TPS took longer but the curves looked smooth and natural</li>
+      <li>You can see small "blocks" in the triangular mesh result where triangles meet</li>
+      <li>The TPS result looks like someone actually drew it that way</li>
+    </ul>
+
+    <h3>Test 2: Digit 7</h3>
+    <p><strong>Setup:</strong></p>
+    <ul>
+      <li>Source: digit 7-a → Target: digit 7-b</li>
+      <li>Control Points: 10 points</li>
+      <li>Points placed on: horizontal stroke, junction where horizontal meets vertical, and along the vertical stroke</li>
+    </ul>
+
+    <p><strong>Results:</strong></p>
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Time</th><th>Quality</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Triangular Mesh</td><td>0.0060s</td><td>Good, some minor artifacts</td></tr>
+        <tr><td>TPS</td><td>0.0241s</td><td>Smoother gradients</td></tr>
+        <tr><td><em>Speed Difference</em></td><td colspan="2">TPS was 4.05× slower; TPS slightly better</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid two">
+      <figure>
+        <img src="report_assets/digit_7-a_to_digit_7-b_comparison_20251021_065636.png" alt="Digit 7: 4-panel comparison (source pts, target pts, mesh, TPS)">
+        <figcaption><strong>Figure 2:</strong> Digit 7 warping comparison (top-left: source with control points; top-right: target with control points; bottom-left: triangular mesh; bottom-right: TPS).</figcaption>
+      </figure>
+      <div class="grid two">
+        <figure>
+          <img src="report_assets/digit_7-a_to_digit_7-b_triangular_20251021_065636.jpg" alt="Digit 7: Triangular mesh result">
+          <figcaption>Triangular mesh result (0.0060s).</figcaption>
+        </figure>
+        <figure>
+          <img src="report_assets/digit_7-a_to_digit_7-b_tps_20251021_065636.jpg" alt="Digit 7: TPS result">
+          <figcaption>TPS result (0.0241s).</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <p><strong>Observations:</strong></p>
+    <ul>
+      <li>Both methods worked well for the simpler shape of digit 7</li>
+      <li>The speed difference was similar to digit 3 (about 4× slower for TPS)</li>
+      <li>Triangular mesh did okay with the mostly straight lines of the "7"</li>
+      <li>TPS still produced smoother results, especially in transitions</li>
+      <li>The difference was less obvious than with digit 3 because digit 7 has fewer curves</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Analysis: Advantages and Disadvantages</h2>
+
+    <h3>Triangular Mesh Warping</h3>
+    <p><strong>Advantages:</strong></p>
+    <ul>
+      <li><strong>Very fast</strong> - completed in 0.006-0.010 seconds</li>
+      <li><strong>Simple to understand</strong> - just triangle transformations</li>
+      <li><strong>Good for real-time use</strong> - fast enough for live applications</li>
+      <li><strong>Works well with geometric shapes</strong> - adequate for simple shapes like digit 7</li>
+      <li><strong>Local control</strong> - changes in one area don't affect far-away regions</li>
+    </ul>
+    <p><strong>Disadvantages:</strong></p>
+    <ul>
+      <li><strong>Visible artifacts</strong> - you can see triangle boundaries and sharp edges</li>
+      <li><strong>Blocky appearance</strong> - curves become angular instead of smooth</li>
+      <li><strong>Not smooth</strong> - has discontinuities where triangles meet</li>
+      <li><strong>Looks artificial</strong> - you can tell it's computer-generated</li>
+      <li><strong>Bad for organic shapes</strong> - doesn't work well for curved objects</li>
+    </ul>
+    <p><strong>When to Use:</strong></p>
+    <ul>
+      <li>Video games or mobile apps where speed matters</li>
+      <li>Real-time filters or effects</li>
+      <li>Geometric shapes with straight lines</li>
+      <li>When you need instant results</li>
+    </ul>
+
+    <h3>Thin Plate Spline (TPS) Warping</h3>
+    <p><strong>Advantages:</strong></p>
+    <ul>
+      <li><strong>Very smooth results</strong> - no visible seams or boundaries</li>
+      <li><strong>Natural appearance</strong> - looks realistic and organic</li>
+      <li><strong>Great for curves</strong> - handles rounded shapes beautifully</li>
+      <li><strong>Professional quality</strong> - suitable for final output</li>
+      <li><strong>No artifacts</strong> - clean, seamless transformation</li>
+    </ul>
+    <p><strong>Disadvantages:</strong></p>
+    <ul>
+      <li><strong>Slower</strong> - takes 4× longer than triangular mesh</li>
+      <li><strong>More complex</strong> - harder math to understand</li>
+      <li><strong>Global changes</strong> - adjusting one point affects the whole image</li>
+      <li><strong>Not for real-time</strong> - too slow for live applications</li>
+      <li><strong>Takes more memory</strong> - needs more computer resources</li>
+    </ul>
+    <p><strong>When to Use:</strong></p>
+    <ul>
+      <li>Photo editing where quality matters</li>
+      <li>Face morphing or character transformations</li>
+      <li>Final output for presentations or reports</li>
+      <li>Handwriting or organic shapes</li>
+      <li>When you have time and want the best quality</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Comparison Summary</h2>
+
+    <h3>Smoothness</h3>
+    <p><strong>Triangular Mesh:</strong> Has visible angular transitions; curves look like connected straight lines; you can see where triangles meet.</p>
+    <p><strong>TPS:</strong> Very smooth throughout; natural-looking curves; no visible seams anywhere.</p>
+    <p><strong>Winner: TPS</strong> — Much smoother results.</p>
+
+    <h3>Speed (Computational Cost)</h3>
+    <p><strong>Triangular Mesh:</strong> 0.006-0.010 seconds; nearly instant.</p>
+    <p><strong>TPS:</strong> 0.024-0.043 seconds; still fast but 4× slower.</p>
+    <p><strong>Winner: Triangular Mesh</strong> — Significantly faster.</p>
+
+    <h3>Continuity</h3>
+    <p><strong>Triangular Mesh:</strong> Has breaks where triangles meet; not mathematically smooth.</p>
+    <p><strong>TPS:</strong> Completely continuous; mathematically smooth (C² continuous).</p>
+    <p><strong>Winner: TPS</strong> — Better mathematical properties.</p>
+  </section>
+
+  <section>
+    <h2>What I Learned</h2>
+    <ol>
+      <li><strong>Speed vs Quality Trade-off:</strong> Triangular mesh is about 4× faster but TPS looks much better. For small images (28×28), both are fast enough. The speed difference would be bigger with larger images.</li>
+      <li><strong>Best Use Cases:</strong> Use triangular mesh for: games, live video, mobile apps, geometric shapes. Use TPS for: photo editing, face morphing, final presentations, organic shapes.</li>
+      <li><strong>Visual Quality Matters:</strong> For digit 3 (lots of curves), TPS was clearly better. For digit 7 (mostly straight), both worked okay. The more curves in the image, the bigger the quality difference.</li>
+      <li><strong>Control Points Matter:</strong> More points (20) gave better results than fewer (10). But even with 20 points, triangular mesh still had artifacts. TPS stayed smooth regardless of point count.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Conclusion</h2>
+    <p>
+      Both warping methods successfully transform images based on control points, but they have different strengths:
+    </p>
+    <p><strong>Triangular Mesh</strong> is like a fast sketch - it gets the job done quickly but you can see the imperfections. It's perfect when speed matters more than quality.</p>
+    <p><strong>TPS</strong> is careful - it takes more time but the result looks professional and smooth. Use it when the final appearance is important.</p>
+    <p>
+      For my tests:
+    </p>
+    <ul>
+      <li><strong>Digit 3:</strong> TPS clearly won on quality, even though it was 4× slower</li>
+      <li><strong>Digit 7:</strong> Both worked well, triangular mesh's speed advantage was more attractive</li>
+      <li><strong>Overall:</strong> I'd use TPS for important work and triangular mesh for quick tests</li>
+    </ul>
+    <p><strong>Recommendation:</strong></p>
+    <ul>
+      <li>For higher speed: Use Triangular Mesh</li>
+      <li>For better quality: Use TPS</li>
+      <li>For digits and handwriting → Use TPS</li>
+    </ul>
+  </section>
+  </section>
+
+
+
+</main>
 </body>
 </html>
