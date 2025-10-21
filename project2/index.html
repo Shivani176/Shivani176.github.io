@@ -1,1 +1,162 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project 2 — Image Homography & Warping (Full Report)</title>
+  <meta name="description" content="Single-file HTML viewer for the full report with images. Drop the /report_assets folder next to this file on GitHub." />
+  <style>
+    :root { --bg:#0f1115; --fg:#e9eef6; --muted:#9aa3b2; --card:#161925; --line:#23283a; --accent:#7aa2ff; --radius:14px; --maxw: 980px; }
+    @media (prefers-color-scheme: light) { :root { --bg:#fafbfe; --fg:#111827; --muted:#4b5563; --card:#ffffff; --line:#e5e7eb; } }
+    html { scroll-behavior: smooth; }
+    body { margin:0; font:16px/1.65 system-ui,-apple-system,Segoe UI,Inter,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header { position: sticky; top:0; z-index:10; backdrop-filter: blur(6px); background: color-mix(in oklab, var(--bg) 85%, transparent); border-bottom:1px solid var(--line); }
+    .nav { max-width: var(--maxw); margin:0 auto; height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 1rem; }
+    .brand { font-weight:700; }
+    .links { display:flex; gap:.75rem; }
+    .links a { color: var(--muted); padding:.3rem .6rem; border-radius:8px; }
+    .links a:hover { color:var(--fg); background: color-mix(in oklab, var(--card) 70%, transparent); text-decoration:none; }
+    main { max-width: var(--maxw); margin: 0 auto; padding: 1rem; }
+    .card { background: var(--card); border:1px solid var(--line); border-radius: var(--radius); padding: 1rem; }
+    h1 { font-size: clamp(1.6rem, 1.2rem + 2vw, 2.4rem); margin: .75rem 0 .25rem; }
+    h2 { font-size: clamp(1.2rem, 1rem + 1vw, 1.6rem); margin: 0 0 .25rem; }
+    .muted { color: var(--muted); }
+    .stack > * + * { margin-top: 1rem; }
+    .pages { display:grid; gap: 1rem; }
+    figure { margin:0; }
+    img.page { width:100%; height:auto; display:block; border:1px solid var(--line); border-radius: 12px; background:#000; }
+    figcaption { color: var(--muted); font-size: .9rem; margin-top: .5rem; text-align:center; }
+    details { border:1px dashed var(--line); border-radius: 10px; padding:.75rem 1rem; background: color-mix(in oklab, var(--card) 70%, transparent); }
+    footer { border-top:1px solid var(--line); margin: 2rem 0 1rem; padding-top:1rem; color: var(--muted); }
+    .note { font-size:.92rem; }
+    .toc { display:flex; flex-wrap:wrap; gap:.5rem; }
+    .toc a { border:1px solid var(--line); border-radius:999px; padding:.25rem .6rem; color:var(--muted); }
+    .toc a:hover { color:var(--fg); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="brand">Project 2 Report</div>
+      <nav class="links" aria-label="Sections">
+        <a href="#intro">Intro</a>
+        <a href="#part1">Part 1</a>
+        <a href="#part2">Part 2</a>
+        <a href="#part3">Part 3</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="stack">
+    <section id="intro" class="card stack">
+      <h1>Computer Vision — Project 2: Image Homography and Warping</h1>
+      <p class="muted">Author: <strong>Shivani Kalal</strong>. This HTML shows the report organized <em>by part</em> (not page-by-page). We are starting with <strong>Part 1</strong>. Images below are extracted figures from the PDF for cleaner, part-level presentation.</p>
+    </section>
+
+    <!-- PART 1 ONLY -->
+    <section id="part1" class="card stack">
+      <h2>Part 1 — Image Homography Estimation</h2>
+
+      <section class="stack">
+        <h3>Objective</h3>
+        <p>Estimate a planar projective transform (homography) to rectify or map between two views of the same plane. Demonstrate correct rectification and warping on real images.</p>
+      </section>
+
+      <section class="stack">
+        <h3>Method (DLT + Normalization)</h3>
+        <ul>
+          <li>Collect ≥4 point correspondences between source and target planes.</li>
+          <li>Build the linear system \(Ah=0\) and solve via SVD for \(h\) (last singular vector).</li>
+          <li>Use coordinate normalization for numerical stability; denormalize at the end.</li>
+          <li>Apply <em>inverse mapping</em> with bilinear interpolation to avoid holes.</li>
+        </ul>
+      </section>
+
+      <section class="stack">
+        <h3>Implementation Notes</h3>
+        <ul>
+          <li>Output bounds computed from warped corner extents to size the canvas.</li>
+          <li>Masking & optional feathered blending to handle seams at boundaries.</li>
+          <li>Assumes a <em>planar</em> scene region; perspective camera model.</li>
+        </ul>
+      </section>
+
+      <section class="stack">
+        <h3>Key Figures</h3>
+        <div class="pages" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+          <figure>
+            <img class="page" src="report_assets/figure_p3_01.png" alt="Part 1 figure p3_01" />
+            <figcaption>Detected/selected correspondences</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p3_02.png" alt="Part 1 figure p3_02" />
+            <figcaption>Homography mapping setup</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p4_01.png" alt="Part 1 figure p4_01" />
+            <figcaption>Rectified view (fronto-parallel)</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p4_02.png" alt="Part 1 figure p4_02" />
+            <figcaption>Warped output bounds</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p5_01.png" alt="Part 1 figure p5_01" />
+            <figcaption>Before vs after rectification</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p5_02.png" alt="Part 1 figure p5_02" />
+            <figcaption>Edge alignment after warp</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p6_01.png" alt="Part 1 figure p6_01" />
+            <figcaption>Additional example 1</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p6_02.png" alt="Part 1 figure p6_02" />
+            <figcaption>Additional example 2</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p7_01.png" alt="Part 1 figure p7_01" />
+            <figcaption>Quantitative check (reprojection error)</figcaption>
+          </figure>
+          <figure>
+            <img class="page" src="report_assets/figure_p7_02.png" alt="Part 1 figure p7_02" />
+            <figcaption>Parameter sensitivity / robustness</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="stack">
+        <h3>Results (Part 1)</h3>
+        <ul>
+          <li>Rectification successfully removes perspective distortion on planar targets.</li>
+          <li>Stable solutions with normalized DLT and RANSAC (if outliers present).</li>
+          <li>Clean warps with inverse mapping + bilinear interpolation.</li>
+        </ul>
+      </section>
+    </section>
+
+    <!-- Placeholders for later parts -->
+    <section id="part2" class="card stack">
+      <h2>Part 2 — AR Poster Replacement</h2>
+      <p class="muted">(Coming next) We will add figures and a short narrative for Part 2 here.</p>
+    </section>
+
+    <section id="part3" class="card stack">
+      <h2>Part 3 — Warping Comparison (Triangular Mesh vs TPS)</h2>
+      <p class="muted">(To be added) Comparison figures and notes will appear here.</p>
+    </section>
+
+    <footer>
+      <div>© <span id="year"></span> Shivani Kalal • Part-by-part report</div>
+    </footer>
+  </main>
+
+  <!-- Note: keep the report_assets/ directory (PNG images) alongside this HTML file on GitHub. -->
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
