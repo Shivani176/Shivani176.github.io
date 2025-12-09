@@ -1,1 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Project 4: Diffusion Models - Shivani Kalal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Minimalistic / Modern CSS -->
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-elevated: #020617;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --border-subtle: rgba(148, 163, 184, 0.3);
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.9);
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #0b1220 0, #020617 55%);
+      color: var(--text-main);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(20px);
+      background: linear-gradient(
+        to bottom,
+        rgba(2, 6, 23, 0.96),
+        rgba(2, 6, 23, 0.88),
+        rgba(2, 6, 23, 0.0)
+      );
+      border-bottom: 1px solid rgba(51, 65, 85, 0.7);
+    }
+
+    .top-nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0.75rem 1.25rem 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #f9fafb;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+    }
+
+    .logo-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0, #e0f2fe 0, #38bdf8 40%, #0ea5e9 100%);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.9);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.3rem;
+      font-size: 0.88rem;
+    }
+
+    .nav-links a {
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      text-decoration: none;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .nav-links a span.bullet {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.6);
+    }
+
+    .nav-links a:hover {
+      color: #e5e7eb;
+      border-color: rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .nav-links a.active {
+      color: #e0f2fe;
+      border-color: rgba(56, 189, 248, 0.9);
+      background: var(--accent-soft);
+    }
+
+    .nav-links a.active span.bullet {
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 2.5rem auto 3.5rem;
+      padding: 0 1.25rem 3.5rem;
+    }
+
+    .report {
+      background: radial-gradient(circle at top left, #020617 0, #020617 40%);
+      border-radius: 26px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      box-shadow: var(--shadow-soft);
+      padding: 2.4rem clamp(2rem, 4vw, 2.8rem);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .report::before {
+      content: "";
+      position: absolute;
+      inset: -120px;
+      background:
+        radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.13) 0, transparent 40%),
+        radial-gradient(circle at 100% 20%, rgba(94, 234, 212, 0.09) 0, transparent 45%);
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .report-header {
+      border-bottom: 1px solid rgba(75, 85, 99, 0.7);
+      padding-bottom: 1.4rem;
+      margin-bottom: 1.7rem;
+    }
+
+    .report-title {
+      font-size: clamp(1.7rem, 3vw, 2.1rem);
+      letter-spacing: 0.03em;
+      margin: 0 0 0.6rem;
+      color: #f9fafb;
+    }
+
+    .report-sub {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      align-items: center;
+    }
+
+    .author-pill {
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
+      color: #e5e7eb;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .tag-pill {
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      border: 1px solid rgba(56, 189, 248, 0.6);
+      background: rgba(15, 23, 42, 0.9);
+      color: #bae6fd;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    h2, h3, h4 {
+      color: #f9fafb;
+      margin-top: 2rem;
+      margin-bottom: 0.4rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.9);
+      padding-bottom: 0.3rem;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin-top: 1.5rem;
+    }
+
+    h4 {
+      font-size: 0.98rem;
+      text-transform: none;
+      letter-spacing: 0.02em;
+    }
+
+    p {
+      margin: 0.45rem 0;
+      font-size: 0.94rem;
+      color: #e5e7eb;
+    }
+
+    .section-block {
+      margin-bottom: 1.8rem;
+    }
+
+    .abstract-block {
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.94));
+      padding: 1.3rem 1.2rem 1.2rem;
+      margin-bottom: 1.9rem;
+      position: relative;
+    }
+
+    .abstract-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+.abstract-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.2);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+
+    ul, ol {
+      padding-left: 1.2rem;
+      margin: 0.4rem 0 0.6rem;
+    }
+
+    li {
+      font-size: 0.94rem;
+      margin: 0.22rem 0;
+      color: #e5e7eb;
+    }
+
+    strong {
+      color: #f9fafb;
+      font-weight: 600;
+    }
+
+    figure {
+      margin: 1.2rem auto;
+      padding: 0.9rem;
+      border-radius: 16px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.95));
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+    }
+
+    figcaption {
+      margin-top: 0.65rem;
+      font-size: 0.83rem;
+      color: var(--text-muted);
+    }
+
+    .part-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .part-chip span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+    }
+
+    .summary-list {
+      border-radius: 16px;
+      border: 1px dashed rgba(148, 163, 184, 0.7);
+      padding: 1.1rem 1.1rem 1rem;
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+    }
+
+    .summary-list ol {
+      margin-top: 0.45rem;
+    }
+
+    .equation-block {
+      margin: 0.75rem 0;
+      padding: 0.5rem 0.8rem;
+      border-left: 2px solid rgba(148, 163, 184, 0.9);
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 0 10px 10px 0;
+      overflow-x: auto;
+    }
+
+    /* Small-screen tweaks */
+    @media (max-width: 640px) {
+      .report {
+        padding: 1.8rem 1.3rem 2.3rem;
+        border-radius: 18px;
+      }
+
+      .top-nav-inner {
+        padding-inline: 0.85rem;
+      }
+
+      .page {
+        padding-inline: 0.85rem;
+      }
+
+      .nav-links {
+        font-size: 0.8rem;
+      }
+
+      .nav-links a {
+        padding: 0.28rem 0.6rem;
+      }
+    }
+  </style>
+
+  <!-- MathJax for LaTeX equations -->
+  <script
+    id="MathJax-script"
+    async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  ></script>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="top-nav-inner">
+      <div class="logo">
+        <span class="logo-dot"></span>
+        <span>Diffusion Models &middot; Project 4</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#part0">
+          <span class="bullet"></span>
+          <span>Part 0</span>
+        </a>
+        <a href="#part1" class="active">
+          <span class="bullet"></span>
+          <span>Part 1</span>
+        </a>
+        <a href="#part2">
+            <span class="bullet"></span>
+            <span>Part 2</span>
+        </a>
+        <a href="#part3">
+            <span class="bullet"></span>
+            <span>Part 3</span>
+        </a>
+
+
+      </nav>
+      
+    </div>
+  </header>
+
+  <div class="page">
+    <article class="report">
+
+      <header class="report-header">
+        <h1 class="report-title">Project 4: Diffusion Models</h1>
+        <div class="report-sub">
+          <span class="author-pill">Shivani Kalal</span>
+          <span class="tag-pill">DeepFloyd&nbsp;IF</span>
+          <span class="tag-pill">Diffusion&nbsp;Models</span>
+        </div>
+      </header>
+
+      <!-- Abstract -->
+      <section class="abstract-block section-block">
+        <div class="abstract-label">Abstract</div>
+        <p>
+          This project explores the fundamental principles of diffusion models through practical implementation using the DeepFloyd IF model. We examine the forward noising process, compare traditional and learned denoising approaches, and demonstrate the power of iterative refinement in reverse diffusion. All experiments use random seed 180 for reproducibility.
+        </p>
+      </section>
+
+      <!-- Part 0 -->
+      <section id="part0" class="section-block">
+        <div class="part-chip">
+          <span class="dot"></span>
+          <span>Part 0</span>
+        </div>
+        <h2>Part 0: Setup and Initial Exploration</h2>
+
+        <div class="section-block">
+          <h3>Model Overview</h3>
+          <p>
+            We use the DeepFloyd IF diffusion model, a two-stage text-to-image model developed by Stability AI. Stage 1 generates \(64 \times 64\) images, while Stage 2 upsamples to \(256 \times 256\). Due to GPU memory constraints on Google Colab's T4 GPU, we use precomputed text embeddings from a T5 encoder rather than loading the full encoder.
+          </p>
+        </div>
+
+        <div class="section-block">
+          <h3>Initial Sampling Experiments</h3>
+          <p>
+            We tested the DeepFloyd model with three text prompts to understand its generative capabilities:
+          </p>
+
+          <p><strong>Prompt 1: "An oil painting of a snowy mountain village"</strong></p>
+          <ul>
+            <li><strong>20 inference steps:</strong> Generated a stylized village with recognizable mountain landscape elements</li>
+            <li><strong>50 inference steps:</strong> Produced smoother, more refined details with improved oil painting aesthetic</li>
+          </ul>
+
+          <p><strong>Prompt 2: "A photo of the Amalfi coast"</strong></p>
+          <ul>
+            <li>Generated Mediterranean coastal imagery with characteristic colors</li>
+          </ul>
+
+          <p><strong>Prompt 3: "A photo of a hipster barista"</strong></p>
+          <ul>
+            <li>Produced portraits with contemporary stylistic elements</li>
+          </ul>
+        </div>
+
+        <div class="section-block">
+          <h3>Discussion: Impact of Inference Steps</h3>
+          <p>
+            Increasing the number of inference steps from 20 to 50 significantly improves image quality and coherence. More steps allow the model to make finer refinements during the denoising process, resulting in smoother textures and better-defined structures. This demonstrates the fundamental trade-off in diffusion models between generation quality and computational cost.
+          </p>
+          <p><strong>Random Seed:</strong> All subsequent experiments use seed 180 for reproducibility.</p>
+        </div>
+      </section>
+
+      <!-- Part 1 -->
+      <section id="part1" class="section-block">
+        <div class="part-chip">
+          <span class="dot"></span>
+          <span>Part 1</span>
+        </div>
+        <h2>Part 1: Sampling Loops</h2>
+
+        <!-- Part 1.1 -->
+        <div class="section-block">
+          <h3>Part 1.1: Forward Process - Adding Noise</h3>
+
+          <h4>Theory</h4>
+          <div class="equation-block">
+            <p>
+              The forward diffusion process gradually corrupts a clean image by adding Gaussian noise according to a predefined schedule. Mathematically:
+            </p>
+            <p>
+              \[
+              q(x_t | x_0) = \mathcal{N}(x_t; \sqrt{\bar\alpha_t} x_0, (1 - \bar\alpha_t)\mathbf{I})
+              \]
+            </p>
+            <p>
+              This can be computed directly as:
+            </p>
+            <p>
+              \[
+              x_t = \sqrt{\bar\alpha_t} x_0 + \sqrt{1 - \bar\alpha_t} \epsilon \quad \text{where } \epsilon \sim \mathcal{N}(0, 1)
+              \]
+            </p>
+            <p>
+              The noise schedule parameter \(\bar\alpha_t\) decreases from values near 1 (minimal noise at \(t=0\)) toward 0 (pure noise at \(t=1000\)).
+            </p>
+          </div>
+
+          <h4>Results</h4>
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_22_1.png" alt="Forward diffusion process" />
+            <figcaption>
+              Forward diffusion process: Original Campanile image (t=0) and progressively noised versions at t=250, 500, and 750
+            </figcaption>
+          </figure>
+
+          <h4>Discussion</h4>
+          <p>
+            Figure (ref{fig:forward}) clearly demonstrates the progressive information destruction in forward diffusion:
+          </p>
+          <p><strong>t=250 (Low noise):</strong> The Campanile tower structure remains clearly visible. Color information is preserved, and large-scale features like the tower's vertical orientation and the blue sky are intact. The image exhibits moderate corruption but maintains semantic meaning.</p>
+          <p><strong>t=500 (Medium noise):</strong> Significant noise dominates the image. While some faint structural hints remain, most fine details are lost. The signal-to-noise ratio has shifted dramatically toward noise.</p>
+          <p><strong>t=750 (High noise):</strong> The image approaches pure Gaussian noise with minimal visible structure from the original. This represents near-complete information loss.</p>
+          <p>
+            This progression validates the mathematical formulation where \(\bar\alpha_t\) controls the signal strength. As \(t\) increases, \(\bar\alpha_t\) decreases, reducing the contribution of the original image and increasing the noise component. The forward process systematically destroys information, creating the challenging inverse problem that reverse diffusion must solve.
+          </p>
+        </div>
+
+        <!-- Part 1.2 -->
+        <div class="section-block">
+          <h3>Part 1.2: Traditional Denoising with Gaussian Blur</h3>
+
+          <h4>Approach</h4>
+          <p>
+            We attempt to denoise the three corrupted images using classical Gaussian blur filtering&mdash;a standard signal processing technique. We tuned kernel sizes and standard deviations to achieve optimal results.
+          </p>
+
+          <h4>Results</h4>
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_23_1.png" alt="Gaussian blur denoising attempts" />
+            <figcaption>
+              Comparison of noisy images (top row) and Gaussian blur denoising attempts (bottom row) at t=250, 500, and 750
+            </figcaption>
+          </figure>
+
+          <h4>Discussion</h4>
+          <p>
+            Figure (ref{fig:gaussian}) reveals the catastrophic failure of traditional denoising methods for this task. Despite careful parameter tuning, Gaussian blur merely produces smoothed noise patterns without recovering any meaningful image structure.
+          </p>
+          <p><strong>Why Gaussian Blur Fails:</strong></p>
+          <ol>
+            <li><strong>No learned priors:</strong> Gaussian blur operates as a local, linear filter without knowledge of natural image statistics. It cannot distinguish between signal and noise based on semantic content.</li>
+            <li><strong>Frequency domain limitations:</strong> While Gaussian blur suppresses high-frequency components (which often contain noise), it also destroys legitimate high-frequency features like edges and textures. The method lacks selectivity.</li>
+            <li><strong>Uniform processing:</strong> The filter treats all image regions identically, unable to adapt to local content. It cannot preserve sharp edges while smoothing flat regions.</li>
+            <li><strong>No reconstruction capability:</strong> At high noise levels (t=750), where signal is nearly completely corrupted, no amount of smoothing can recover lost information. Gaussian blur has no generative capacity.</li>
+          </ol>
+          <p>
+            This stark failure motivates the need for learned denoising approaches that understand the manifold of natural images and can perform context-aware reconstruction.
+          </p>
+        </div>
+
+        <!-- Part 1.3 -->
+        <div class="section-block">
+          <h3>Part 1.3: One-Step Denoising with Pretrained UNet</h3>
+
+          <h4>Implementation</h4>
+          <div class="equation-block">
+            <p>
+              We leverage the pretrained DeepFloyd UNet to predict the noise \(\hat{\epsilon}\) present in each corrupted image. The clean image is then estimated by rearranging the forward process equation:
+            </p>
+            <p>
+              \[
+              \hat{x}_0 = \frac{x_t - \sqrt{1 - \bar\alpha_t} \hat{\epsilon}}{\sqrt{\bar\alpha_t}}
+              \]
+            </p>
+            <p>
+              The UNet takes the noisy image \(x_t\), timestep \(t\), and text prompt embedding as inputs, outputting a 6-channel tensor where the first 3 channels contain the noise estimate.
+            </p>
+          </div>
+
+          <h4>Results</h4>
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_25_1.png" alt="One-step UNet denoising at t=250" />
+            <figcaption>
+              One-step UNet denoising at t=250: Original, noisy, and denoised images
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_25_4.png" alt="One-step UNet denoising at t=500" />
+            <figcaption>
+              One-step UNet denoising at t=500
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_25_7.png" alt="One-step UNet denoising at t=750" />
+            <figcaption>
+              One-step UNet denoising at t=750
+            </figcaption>
+          </figure>
+
+          <h4>Discussion</h4>
+          <p>
+            The pretrained UNet demonstrates dramatically superior performance compared to Gaussian blur:
+          </p>
+          <p><strong>t=250:</strong> Excellent reconstruction quality. The Campanile tower is clearly recognizable with accurate colors, proper vertical structure, and correct environmental context. While some fine details are smoothed, the overall semantic content is well preserved. This shows the UNet's ability to effectively separate signal from noise at moderate corruption levels.</p>
+          <p><strong>t=500:</strong> Good reconstruction despite heavy noise. The tower structure is recovered, though with reduced sharpness and some color desaturation. The model successfully identifies the vertical tower structure and distinguishes it from the background, demonstrating its learned understanding of natural image composition.</p>
+          <p><strong>t=750:</strong> Significant reconstruction but with notable degradation. The model produces a tower-like vertical structure with appropriate background, but details are very blurry and colors are muted. At this extreme noise level, the original signal is nearly completely destroyed, making accurate reconstruction extremely challenging even for a learned model.</p>
+          <p><strong>Key Insights:</strong></p>
+          <ul>
+            <li>The UNet's learned priors about natural images enable context-aware denoising</li>
+            <li>Performance degrades gracefully with increasing noise, unlike Gaussian blur's complete failure</li>
+            <li>Even one-step denoising vastly outperforms classical methods, validating the learned approach</li>
+            <li>The model's struggle at t=750 motivates the need for iterative refinement rather than single-step reconstruction</li>
+          </ul>
+        </div>
+
+        <!-- Part 1.4 -->
+        <div class="section-block">
+          <h3>Part 1.4: Iterative Denoising</h3>
+
+          <h4>Theory and Implementation</h4>
+          <div class="equation-block">
+            <p>
+              Rather than attempting to denoise from \(x_t\) to \(x_0\) in one large step, diffusion models iteratively remove noise in smaller increments. We construct a strided timestep schedule starting at 990 with stride 30, reaching 0 in approximately 33 steps.
+            </p>
+            <p>
+              At each step \(i\), we transition from timestep \(t\) to \(t'\) (where \(t' &lt; t\)) using:
+            </p>
+            <p>
+              \[
+              x_{t'} = \frac{\sqrt{\bar\alpha_{t'}}\beta_t}{1 - \bar\alpha_t} x_0 + \frac{\sqrt{\alpha_t}(1 - \bar\alpha_{t'})}{1 - \bar\alpha_t} x_t + v_\sigma
+              \]
+            </p>
+            <p>
+              where:
+            </p>
+            <ul>
+              <li>\(x_0\) is our current estimate of the clean image</li>
+              <li>\(\alpha_t = \bar\alpha_t / \bar\alpha_{t'}\)</li>
+              <li>\(\beta_t = 1 - \alpha_t\)</li>
+              <li>\(v_\sigma\) is predicted variance noise</li>
+            </ul>
+            <p>
+              This formula balances our estimate of the clean image with the current noisy image, gradually reducing noise while maintaining coherence.
+            </p>
+          </div>
+
+          <h4>Results</h4>
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_32_1.png" alt="Iterative denoising visualization" />
+            <figcaption>
+              Iterative denoising visualization: (Top) Progressive denoising from t=690 to t=0, showing gradual noise reduction. (Bottom) Comparison of final results from iterative denoising, one-step denoising, and Gaussian blur against original image.
+            </figcaption>
+          </figure>
+
+          <h4>Discussion</h4>
+          <p>
+            Figure \(\ref{fig:iterative}\) demonstrates the power of iterative refinement through several key observations:
+          </p>
+          <p><strong>Progressive Refinement (Top Panel):</strong></p>
+          <ul>
+            <li><strong>i=10, t=690:</strong> The image is dominated by noise with barely perceptible structure</li>
+            <li><strong>i=15, t=540:</strong> Vertical structures begin emerging; noise patterns show organization</li>
+            <li><strong>i=20, t=390:</strong> The tower shape becomes clearly visible; colors start appearing</li>
+            <li><strong>i=25, t=240:</strong> Details sharpen significantly; background separation improves</li>
+            <li><strong>i=30, t=90:</strong> Near-final quality with clear structure and natural appearance</li>
+          </ul>
+          <p>
+            Each step makes modest but consistent progress. The gradual evolution shows the model systematically removing noise while building up coherent structures, rather than attempting a single dramatic transformation.
+          </p>
+          <p><strong>Method Comparison (Bottom Panel):</strong></p>
+          <p><strong>Iterative Denoising:</strong> Produces the highest quality reconstruction. The tower is sharp with accurate colors, proper lighting, and natural-looking background. Fine details are preserved, and the overall image quality approaches the original.</p>
+          <p><strong>One-Step Denoising:</strong> Shows good structure but with noticeable blurriness and reduced sharpness. Colors are somewhat muted and details are smoothed over. This validates that the single large denoising step is fundamentally more difficult than many small steps.</p>
+          <p><strong>Gaussian Blur:</strong> Complete failure&mdash;just smoothed colored noise with no recognizable structure. This reinforces that learned approaches are essential for this task.</p>
+          <p><strong>Theoretical Validation:</strong></p>
+          <p>
+            These results validate the core DDPM (Denoising Diffusion Probabilistic Models) insight: complex inverse problems are more tractable when decomposed into sequences of simpler problems. Each denoising step addresses a more manageable sub-problem, allowing the model to:
+          </p>
+          <ol>
+            <li>Make confident predictions at each noise level</li>
+            <li>Progressively refine details without introducing artifacts</li>
+            <li>Maintain global coherence while adding local details</li>
+            <li>Leverage learned priors appropriate to each noise scale</li>
+          </ol>
+          <p>
+            The iterative approach transforms an ill-posed problem (recovering \(x_0\) from heavily corrupted \(x_t\)) into a series of well-posed problems (predicting \(x_{t-1}\) from \(x_t\)), each of which the neural network can solve reliably.
+          </p>
+          <p><strong>Computational Trade-off:</strong></p>
+          <p>
+            While iterative denoising requires ~33 UNet evaluations compared to 1 for one-step denoising, the quality improvement is substantial. This represents the fundamental trade-off in diffusion models: better results require more computation. The stride parameter offers flexible control over this trade-off.
+          </p>
+        </div>
+      </section>
+
+      <!-- Part 1 Summary -->
+      <section class="section-block">
+        <h2>Part 1 Summary and Conclusions</h2>
+        <div class="summary-list">
+          <p>
+            Part 1 systematically explored the diffusion model framework:
+          </p>
+          <ol>
+            <li><strong>Forward process</strong> (1.1) mathematically and visually demonstrated controlled information destruction</li>
+            <li><strong>Traditional methods</strong> (1.2) highlighted the inadequacy of classical signal processing for high-noise scenarios</li>
+            <li><strong>Learned one-step denoising</strong> (1.3) showed the power of neural networks with learned priors, but also their limitations</li>
+            <li><strong>Iterative refinement</strong> (1.4) demonstrated the core insight that sequential small steps dramatically outperform single large steps</li>
+          </ol>
+          <p>
+            These experiments establish the foundational principles that make diffusion models effective: learned priors about natural images, appropriate problem decomposition, and iterative refinement. The clear performance hierarchy (Gaussian blur &lt; one-step UNet &lt; iterative denoising) validates the theoretical framework underlying modern diffusion models.
+          </p>
+        </div>
+      </section>
+
+            <!-- Part 2 -->
+      <section id="part2" class="section-block">
+        <div class="part-chip">
+          <span class="dot"></span>
+          <span>Part 2</span>
+        </div>
+        <h2>Part 2: Classifier-Free Guidance and Image-to-Image Translation</h2>
+
+        <p>
+          Part 2 explores advanced sampling techniques that significantly improve generation quality and enable controlled image editing. We examine unconditional sampling, Classifier-Free Guidance (CFG), and image-to-image translation using the SDEdit algorithm.
+        </p>
+
+        <!-- Part 2.1 -->
+        <div class="section-block">
+          <h3>Part 2.1: Diffusion Model Sampling from Random Noise</h3>
+
+          <h4>Approach</h4>
+          <p>
+            We generate images from pure random noise by setting \texttt{i\_start = 0} in our iterative denoising function. Starting with \(x_T \sim \mathcal{N}(0, 1)\), we progressively denoise over 33 steps, effectively sampling from the learned distribution of natural images conditioned on the text prompt "a high quality photo."
+          </p>
+
+          <h4>Results</h4>
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_35_1.png" alt="Sampling from random noise without CFG" />
+            <figcaption>
+              Five images generated from random noise using unconditional sampling (without CFG)
+            </figcaption>
+          </figure>
+
+          <h4>Discussion</h4>
+          <p>
+            Figure (Sampling 2.1) shows five samples generated from pure noise without Classifier-Free Guidance. The results reveal several characteristics of unconditional diffusion sampling:
+          </p>
+
+          <p><strong>Color Palette:</strong> All five samples exhibit similar brown/tan/beige tones, suggesting the model has learned that "high quality photos" often feature these earthy colors. This reflects the training data distribution.</p>
+
+          <p><strong>Texture and Structure:</strong> The images display smooth gradients without sharp features or well-defined objects. This lack of detail indicates that without guidance, the model produces safe, generic outputs that minimize reconstruction error across many possible images.</p>
+
+          <p><strong>Limited Diversity and Quality:</strong> While the samples are recognizable as "images" rather than noise, they lack semantic content or identifiable subjects. The generations appear almost abstract, with minimal variation between samples.</p>
+
+          <p><strong>Why Quality is Limited:</strong></p>
+          <ol>
+            <li><strong>No guidance signal:</strong> The model receives only the weak conditioning from "a high quality photo"&mdash;essentially an unconditional prompt</li>
+            <li><strong>Mode averaging:</strong> Without strong guidance, the model averages across many possible outputs, producing bland results</li>
+            <li><strong>Uncertainty at high noise:</strong> Starting from pure noise (\(t=1000\)) represents maximum uncertainty; small errors compound through iterations</li>
+          </ol>
+
+          <p>
+            These limitations motivate the need for Classifier-Free Guidance to improve sample quality.
+          </p>
+        </div>
+
+        <!-- Part 2.2 -->
+        <div class="section-block">
+          <h3>Part 2.2: Classifier-Free Guidance (CFG)</h3>
+
+          <h4>Theory</h4>
+          <div class="equation-block">
+            <p>
+              Classifier-Free Guidance improves generation quality by amplifying the influence of text conditioning. We compute both conditional and unconditional noise estimates:
+            </p>
+            <p>
+              \[
+              \epsilon = \epsilon_u + \gamma (\epsilon_c - \epsilon_u)
+              \]
+            </p>
+            <p>
+              where:
+            </p>
+            <ul>
+              <li>\(\epsilon_c\) is the conditional noise estimate (with text prompt)</li>
+              <li>\(\epsilon_u\) is the unconditional noise estimate (with empty prompt "")</li>
+              <li>\(\gamma\) is the guidance scale (we use \(\gamma = 7\))</li>
+            </ul>
+            <p>
+              For \(\gamma &gt; 1\), we extrapolate beyond the conditional estimate, effectively "pushing" the generation toward the text prompt's semantic direction.
+            </p>
+          </div>
+
+          <h4>Implementation</h4>
+          <p>
+            At each denoising step, we run the UNet twice:
+          </p>
+          <ol>
+            <li>Once with the text prompt embedding to get \(\epsilon_c\)</li>
+            <li>Once with the empty prompt embedding to get \(\epsilon_u\)</li>
+            <li>Combine using the CFG formula with \(\gamma = 7\)</li>
+          </ol>
+
+          <h4>Results</h4>
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_38_1.png" alt="Images generated with CFG" />
+            <figcaption>
+              Five images generated with Classifier-Free Guidance (\(\gamma = 7\))
+            </figcaption>
+          </figure>
+
+          <h4>Discussion</h4>
+          <p>
+            Figure (CFG 2.2) demonstrates the dramatic impact of CFG on generation quality. Comparing with Figure (Sampling 2.1):
+          </p>
+
+          <p><strong>Color Richness:</strong> The CFG samples exhibit rich, saturated colors&mdash;deep magentas, maroons, and purples with distinct gradients. This contrasts sharply with the muted browns of unconditional sampling.</p>
+
+          <p><strong>Visual Structure:</strong> While still abstract, the CFG samples show more defined gradients and subtle tonal variations. Sample 2 displays horizontal banding, suggesting emerging structure.</p>
+
+          <p><strong>Quality Improvement:</strong> The images appear more "intentional" and aesthetically pleasing. The color palettes are coherent and the gradients are smooth, indicating better-defined outputs.</p>
+
+          <p><strong>Consistency:</strong> All five samples share similar magenta/maroon color schemes, showing that CFG produces more consistent outputs aligned with the conditioning signal.</p>
+
+          <p><strong>Why CFG Works:</strong></p>
+          <ol>
+            <li><strong>Sharpens the distribution:</strong> By amplifying \((\epsilon_c - \epsilon_u)\), CFG moves away from the unconditional distribution's mode toward regions with higher conditional probability</li>
+            <li><strong>Reduces mode averaging:</strong> The guidance prevents the model from hedging between multiple possibilities, forcing more confident predictions</li>
+            <li><strong>Trades diversity for quality:</strong> With \(\gamma = 7\), we sacrifice sample diversity (notice similar colors) to gain significant quality improvements</li>
+            <li><strong>Amplifies conditioning:</strong> The extrapolation beyond \(\epsilon_c\) strengthens weak conditioning signals, making text prompts more influential</li>
+          </ol>
+
+          <p><strong>The \(\gamma\) Parameter:</strong></p>
+          <ul>
+            <li>\(\gamma = 0\): Pure unconditional generation</li>
+            <li>\(\gamma = 1\): Standard conditional generation</li>
+            <li>\(\gamma &gt; 1\): Enhanced quality but reduced diversity (we use 7)</li>
+            <li>\(\gamma\) too high: Can cause oversaturation and artifacts</li>
+          </ul>
+
+          <p>
+            The dramatic quality gap between Figures (Sampling 2.1) and (CFG 2.2) explains why CFG has become standard practice in modern diffusion models. It transforms diffusion from an interesting research technique into a practical tool for high-quality image generation.
+          </p>
+        </div>
+
+        <!-- Part 2.3 -->
+        <div class="section-block">
+          <h3>Part 2.3: Image-to-Image Translation</h3>
+
+          <h4>Theory: The SDEdit Algorithm</h4>
+          <p>
+            Image-to-image translation leverages the diffusion model's ability to project noisy images onto the natural image manifold. The SDEdit (Stochastic Differential Editing) algorithm:
+          </p>
+          <ol>
+            <li>Takes a real image \(x_0\)</li>
+            <li>Adds controlled noise to reach \(x_t\) at timestep \(t\)</li>
+            <li>Denoises back to \(x_0\) using the learned reverse process</li>
+          </ol>
+          <p>
+            The key insight: the amount of noise added determines edit strength. More noise \(\rightarrow\) larger edits; less noise \(\rightarrow\) smaller edits.
+          </p>
+
+          <h4>Implementation</h4>
+          <p>
+            We test six noise levels by varying \texttt{i\_start} \(\in \{1, 3, 5, 7, 10, 20\}\):
+          </p>
+          <ul>
+            <li>Lower \texttt{i\_start} (e.g., 1): Minimal noise added, minor edits</li>
+            <li>Higher \texttt{i\_start} (e.g., 20): Substantial noise, major reimagining</li>
+          </ul>
+          <p>
+            We apply this to three images: the Campanile test image, headphones, and a butterfly.
+          </p>
+
+          <h4>Results</h4>
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_40_1.png" alt="Image-to-image tower edits" />
+            <figcaption>
+              Image-to-image translation on Campanile tower: Original (left) followed by edits at increasing noise levels (i\_start = 1, 3, 5, 7, 10, 20)
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_40_4.png" alt="Image-to-image headphones edits" />
+            <figcaption>
+              Image-to-image translation on headphones: Noise level progression from minimal to substantial edits
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_40_6.png" alt="Image-to-image butterfly edits" />
+            <figcaption>
+              Image-to-image translation on butterfly: Demonstrating edit control across noise levels
+            </figcaption>
+          </figure>
+
+          <h4>Discussion</h4>
+          <p>
+            The three image sequences beautifully illustrate the noise-to-edit-strength relationship:
+          </p>
+
+          <p><strong>Campanile Tower image:</strong></p>
+          <ul>
+            <li><strong>i\_start=1 (t=960):</strong> Almost imperceptible changes&mdash;subtle color shift to pink/magenta gradient</li>
+            <li><strong>i\_start=3 (t=900):</strong> Noticeable stylistic transformation with purple/orange gradient, but tower structure preserved</li>
+            <li><strong>i\_start=5 (t=840):</strong> Strong artistic reinterpretation with blue checkered pattern overlay, tower still recognizable</li>
+            <li><strong>i\_start=7 (t=780):</strong> Major structural modifications, tower becomes more abstract</li>
+            <li><strong>i\_start=10 (t=690):</strong> Significant reimagining while maintaining vertical structure and general composition</li>
+            <li><strong>i\_start=20 (t=390):</strong> Complete reinterpretation that preserves only basic layout (vertical tower, horizontal ground)</li>
+          </ul>
+
+          <p><strong>Headphones image:</strong></p>
+          <p>
+            The headphones demonstrate excellent semantic preservation across noise levels:
+          </p>
+          <ul>
+            <li><strong>Low noise (1-3):</strong> Stylistic variations&mdash;glossy sphere interpretations with preserved circular form</li>
+            <li><strong>Medium noise (5-7):</strong> Recognizable headphone shapes with creative interpretations of the ear cups</li>
+            <li><strong>High noise (10-20):</strong> Consistent headphone identity despite major visual changes; the model "knows" the subject is headphones</li>
+          </ul>
+          <p>
+            The headphones maintain their semantic identity remarkably well, suggesting the diffusion model has strong learned priors for this object category.
+          </p>
+
+          <p><strong>Butterfly image:</strong></p>
+          <p>
+            The butterfly sequence shows the most dramatic transformations:
+          </p>
+          <ul>
+            <li><strong>i\_start=1:</strong> Minimal change&mdash;purple background tint</li>
+            <li><strong>i\_start=3:</strong> Artistic reinterpretation as red sphere/orb</li>
+            <li><strong>i\_start=5:</strong> Complete reimagining as human silhouette (!)</li>
+            <li><strong>i\_start=7:</strong> Returns to butterfly-like form with brown/orange coloring</li>
+            <li><strong>i\_start=10, 20:</strong> Stable butterfly representations with blue wings</li>
+          </ul>
+
+          <p>
+            The non-monotonic progression (sphere \(\rightarrow\) human \(\rightarrow\) butterfly) reveals an interesting property: at intermediate noise levels, the model can "misinterpret" the subject before converging to a stable semantic category at higher noise.
+          </p>
+
+          <p><strong>Key Insights:</strong></p>
+          <ol>
+            <li><strong>Predictable control:</strong> The noise level provides intuitive, continuous control over edit magnitude</li>
+            <li><strong>Semantic preservation:</strong> Even at high noise levels, the model often maintains core semantic properties (e.g., headphones remain headphones)</li>
+            <li><strong>Structure before details:</strong> The model preserves large-scale composition (layout, object positions) more robustly than fine details</li>
+            <li><strong>Object-dependent behavior:</strong> Simple, high-contrast subjects (tower, headphones) maintain identity better than complex textures (butterfly)</li>
+            <li><strong>Creative reinterpretation:</strong> High noise levels produce creative variations while respecting the original's "essence"</li>
+          </ol>
+
+          <p><strong>The Manifold Projection Interpretation:</strong></p>
+          <p>
+            The SDEdit algorithm effectively "projects" the noisy image onto the learned manifold of natural images. At each noise level:
+          </p>
+          <ul>
+            <li>Low noise: Small displacement, stays near original on manifold</li>
+            <li>High noise: Large displacement, explores distant manifold regions</li>
+            <li>The reverse process "pulls" the noisy image toward the nearest natural image</li>
+          </ul>
+          <p>
+            This geometric interpretation explains why edits become more dramatic with noise: we're allowing the model to travel further along the manifold before projecting back.
+          </p>
+        </div>
+      </section>
+
+      <!-- Part 2 Conclusion -->
+      <section class="section-block">
+        <h2>Part 2 Conclusion:</h2>
+        <div class="summary-list">
+          <p>
+            Part 2 demonstrated critical techniques for practical diffusion model deployment:
+          </p>
+          <ol>
+            <li><strong>Sampling from noise</strong> (2.1) showed that unconditional generation produces valid but low-quality images</li>
+            <li><strong>Classifier-Free Guidance</strong> (2.2) dramatically improved quality by amplifying conditioning signals, making diffusion models practical for real applications</li>
+            <li><strong>Image-to-image translation</strong> (2.3) revealed an elegant control mechanism where noise levels provide intuitive edit strength control</li>
+          </ol>
+        </div>
+      </section>
+
+            <!-- Part 3 -->
+      <section id="part3" class="section-block">
+        <div class="part-chip">
+          <span class="dot"></span>
+          <span>Part 3</span>
+        </div>
+        <h2>Part 3: Visual Anagrams</h2>
+
+        <p>
+          Part 3 explores an advanced application of diffusion models: creating visual anagrams&mdash;optical illusions that display different images depending on viewing orientation. We implement the algorithm from the Visual Anagrams paper (CVPR 2024) to generate images that transform when flipped upside down.
+        </p>
+
+        <!-- Theory -->
+        <div class="section-block">
+          <h3>Theory: Visual Anagrams Algorithm</h3>
+
+          <h4>The Core Idea</h4>
+          <p>
+            Visual anagrams are images that appear as one subject when viewed normally but reveal a completely different subject when flipped 180&deg;. Creating such illusions requires the diffusion model to simultaneously satisfy two conflicting constraints:
+          </p>
+          <ul>
+            <li>When viewed right-side up, the image should denoise toward prompt \(p_1\)</li>
+            <li>When viewed upside down, the image should denoise toward prompt \(p_2\)</li>
+          </ul>
+
+          <h4>The Algorithm</h4>
+          <p>
+            At each denoising step, we:
+          </p>
+          <ol>
+            <li>Denoise \(x_t\) normally with prompt \(p_1\) to get noise estimate \(\epsilon_1\)</li>
+            <li>Flip \(x_t\) upside down, denoise with prompt \(p_2\) to get \(\epsilon_2\)</li>
+            <li>Flip \(\epsilon_2\) back to right-side up orientation</li>
+            <li>Average the two noise estimates: \(\epsilon = (\epsilon_1 + \epsilon_2) / 2\)</li>
+            <li>Use this averaged noise to perform the reverse diffusion step</li>
+          </ol>
+
+          <div class="equation-block">
+            <p>
+              Mathematically:
+            </p>
+            <p>
+              \[
+              \epsilon_1 = \text{UNet}(x_t, t, p_1)
+              \]
+            </p>
+            <p>
+              \[
+              \epsilon_2 = \text{flip}(\text{UNet}(\text{flip}(x_t), t, p_2))
+              \]
+            </p>
+            <p>
+              \[
+              \epsilon = \frac{\epsilon_1 + \epsilon_2}{2}
+              \]
+            </p>
+          </div>
+
+          <p>
+            The key insight: by averaging noise estimates from both orientations with equal weight, we force the model to find a compromise solution that satisfies both prompts simultaneously.
+          </p>
+        </div>
+
+        <!-- Implementation details -->
+        <div class="section-block">
+          <h3>Implementation Details</h3>
+          <p>
+            We implement the <code>visual_anagrams()</code> function with the following specifications:
+          </p>
+          <ul>
+            <li>Flipping operation: <code>torch.flip(x, dims=[2])</code> for upside-down rotation</li>
+            <li>Equal averaging: Both noise estimates contribute 50% to the final noise</li>
+            <li>Starting timestep: <code>i_start = 5</code> (moderate noise level)</li>
+            <li>Random seed: 180 (for illusion 1), 181 (for illusion 2), 180 (for illusion 3)</li>
+          </ul>
+        </div>
+
+        <!-- Results -->
+        <div class="section-block">
+          <h3>Results: Three Visual Anagrams</h3>
+
+          <h4>Required Illusion: Campfire &harr; Old Man</h4>
+          <p><strong>Prompt 1:</strong> "an oil painting of people around a campfire"<br>
+             <strong>Prompt 2:</strong> "an oil painting of an old man"</p>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_1.png" alt="Campfire/Old Man visual anagram trial 1" />
+            <figcaption>
+              Visual anagram trial 1 (seed 180): Campfire scene (left) transforms into old man (right) when flipped
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_2.png" alt="Campfire/Old Man visual anagram trial 2" />
+            <figcaption>
+              Visual anagram trial 2: Alternative generation showing different artistic interpretation
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_3.png" alt="Campfire/Old Man visual anagram trial 3" />
+            <figcaption>
+              Visual anagram trial 3: Highly detailed version with complex color patterns
+            </figcaption>
+          </figure>
+
+          <p>
+            <strong>Analysis:</strong> Trial 1 (Figure fig:anagram1_trial1) provides the best illusion. In the right-side-up orientation, warm reds and yellows suggest campfire flames with darker figures around them. When flipped, the composition reorganizes into facial features&mdash;the warm colors become skin tones and the darker regions form facial structure. The oil painting style allows abstract interpretation in both orientations, making the dual-image effect more convincing.
+          </p>
+
+          <h4>Custom Illusion 1: Rocket Ship &harr; Pencil</h4>
+          <p><strong>Prompt 1:</strong> "a rocket ship"<br>
+             <strong>Prompt 2:</strong> "a pencil"</p>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_5.png" alt="Rocket/Pencil visual anagram trial 1" />
+            <figcaption>
+              Rocket/Pencil illusion trial 1 (seed 181): Both objects share elongated vertical structure
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_6.png" alt="Rocket/Pencil visual anagram trial 2" />
+            <figcaption>
+              Rocket/Pencil illusion trial 2: Flowing, organic interpretation
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_7.png" alt="Rocket/Pencil visual anagram trial 3" />
+            <figcaption>
+              Rocket/Pencil illusion trial 3: Highly abstract with pixelated texture
+            </figcaption>
+          </figure>
+
+          <p>
+            <strong>Analysis:</strong> Trial 2 (Figure fig:anagram2_trial2) achieves the most successful illusion. The flowing, curved forms work well for both interpretations. The model leverages the semantic similarity between rockets and pencils&mdash;both are elongated, tapered objects with pointed tips. The pastel color palette and soft gradients allow the forms to be read either as the sleek metallic surface of a rocket or the smooth wood/paint of a pencil. The symmetric composition exploits rotational invariance effectively.
+          </p>
+
+          <h4>Custom Illusion 2: Waterfalls &harr; Skull</h4>
+          <p><strong>Prompt 1:</strong> "a lithograph of waterfalls"<br>
+             <strong>Prompt 2:</strong> "a lithograph of a skull"</p>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_9.png" alt="Waterfalls/Skull visual anagram trial 1" />
+            <figcaption>
+              Waterfalls/Skull illusion trial 1 (seed 180): Natural landscape transforms into macabre imagery
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_10.png" alt="Waterfalls/Skull visual anagram trial 2" />
+            <figcaption>
+              Waterfalls/Skull illusion trial 2: Flowing curves adapt to both interpretations
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_44_11.png" alt="Waterfalls/Skull visual anagram trial 3" />
+            <figcaption>
+              Waterfalls/Skull illusion trial 3: Complex multi-element composition
+            </figcaption>
+          </figure>
+
+          <p>
+            <strong>Analysis:</strong> Trial 1 (Figure fig:anagram3_trial1) produces the most compelling illusion. The lithograph style's inherent abstraction facilitates dual interpretation. In the waterfall orientation, cascading brown/tan forms suggest flowing water, with teal/green elements as vegetation and pools. Flipped upside down, these same flowing forms outline the curved dome of a skull, while the red/brown regions become eye sockets and nasal cavity. The lithographic aesthetic&mdash;with its emphasis on line, texture, and limited color palette&mdash;makes the ambiguity feel intentional rather than forced.
+          </p>
+        </div>
+
+        <!-- Optional upsampled -->
+        <div class="section-block">
+          <h3>Optional: Upsampled Visual Anagrams (256×256)</h3>
+          <p>
+            To enhance visual quality, we upsampled the three best 64×64 illusions to 256×256 using DeepFloyd's Stage 2 model. This required careful memory management: saving the 64×64 results as <code>.npy</code> files, freeing Stage 1 from GPU memory, loading Stage 2, and then upsampling.
+          </p>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_49_1.png" alt="Upsampled Campfire/Old Man illusion" />
+            <figcaption>
+              Upsampled Campfire/Old Man illusion (256×256): Enhanced detail and smoother oil painting texture
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_50_1.png" alt="Upsampled Rocket/Pencil illusion" />
+            <figcaption>
+              Upsampled Rocket/Pencil illusion (256×256): Refined forms with intricate pattern details
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img src="Shivani_Project_4_files/Shivani_Project_4_51_1.png" alt="Upsampled Waterfalls/Skull illusion" />
+            <figcaption>
+              Upsampled Waterfalls/Skull illusion (256×256): Lithographic texture more pronounced
+            </figcaption>
+          </figure>
+        </div>
+
+        <!-- Discussion -->
+        <div class="section-block">
+          <h3>Discussion</h3>
+
+          <h4>Why Visual Anagrams Work</h4>
+          <p>
+            The success of visual anagrams reveals several important properties of diffusion models:
+          </p>
+
+          <p><strong>1. Noise Space Flexibility:</strong><br>
+            In the high-noise regime (starting at <code>i_start = 5</code>, or \(t \approx 840\)), the image contains significant ambiguity. Both interpretations can coexist because specific details haven't yet been determined. The model exploits this ambiguity to find compromise solutions.
+          </p>
+
+          <p><strong>2. Symmetric Features:</strong><br>
+            Many natural objects have approximate symmetries or can be interpreted symmetrically. The model learns to leverage these symmetries&mdash;for example, a circular campfire gathering can be rotationally symmetric, allowing dual interpretation.
+          </p>
+
+          <p><strong>3. Learned Compositional Understanding:</strong><br>
+            The model doesn't just memorize images; it understands compositional structure. It can place features (eyes, flames, facial structure) in configurations that work for multiple interpretations when rotated.
+          </p>
+
+          <p><strong>4. Averaging as Constraint Satisfaction:</strong><br>
+            The equal averaging \((\epsilon_1 + \epsilon_2) / 2\) implements a form of multi-objective optimization. The model finds solutions that minimize denoising error for both prompts simultaneously, rather than favoring one over the other.
+          </p>
+
+          <h4>Prompt Selection Matters</h4>
+          <p>
+            Our results demonstrate that illusion quality depends heavily on prompt compatibility:
+          </p>
+
+          <p><strong>High Compatibility (Rocket/Pencil):</strong></p>
+          <ul>
+            <li>Both objects are elongated, tapered, and pointed</li>
+            <li>Similar aspect ratios and overall geometry</li>
+            <li>Result: Very convincing dual interpretation</li>
+          </ul>
+
+          <p><strong>Moderate Compatibility (Campfire/Old Man):</strong></p>
+          <ul>
+            <li>Campfire has warm colors (orange/red/yellow)</li>
+            <li>Old man can have warm skin tones</li>
+            <li>Both can be interpreted with central focal point</li>
+            <li>Result: Good illusion with some abstract interpretation needed</li>
+          </ul>
+
+          <p><strong>Low Compatibility but Stylistically Unified (Waterfalls/Skull):</strong></p>
+          <ul>
+            <li>Semantically dissimilar (nature vs. anatomy)</li>
+            <li>Lithograph style provides unifying aesthetic</li>
+            <li>Both can be rendered with flowing curves</li>
+            <li>Result: Abstract but effective illusion</li>
+          </ul>
+
+          <h4>Variability Across Trials</h4>
+          <p>
+            The three trials for each illusion show substantial variation, highlighting the stochastic nature of diffusion:
+          </p>
+          <ul>
+            <li>Different random seeds produce completely different compositions</li>
+            <li>Some trials yield pixelated, abstract results (Trial 3 for rocket/pencil)</li>
+            <li>Others produce smoother, more painterly outputs (Trial 2 for rocket/pencil)</li>
+            <li>Success rate is not 100%&mdash;multiple generations are often needed</li>
+          </ul>
+
+          <h4>Upsampling Impact</h4>
+          <p>
+            The 256×256 upsampled versions (Figures fig:upsample1–fig:upsample3) demonstrate significant quality improvements:
+          </p>
+          <ul>
+            <li><strong>Texture detail:</strong> Brushstrokes in oil paintings become visible; lithographic line work sharpens</li>
+            <li><strong>Color refinement:</strong> Smoother gradients and more nuanced color transitions</li>
+            <li><strong>Structural clarity:</strong> Forms are better defined while maintaining dual interpretability</li>
+            <li><strong>Artistic coherence:</strong> The upsampled images look more like genuine artworks</li>
+          </ul>
+          <p>
+            Importantly, upsampling preserves the visual anagram property&mdash;both orientations remain recognizable in the higher-resolution versions.
+          </p>
+
+          <h4>Comparison with Traditional Optical Illusions</h4>
+          <p>
+            Visual anagrams created by diffusion models differ from classical optical illusions:
+          </p>
+
+          <p><strong>Classical Illusions:</strong></p>
+          <ul>
+            <li>Carefully hand-designed by artists</li>
+            <li>Exploit specific perceptual features (edge detection, figure-ground segregation)</li>
+            <li>Often rely on binary interpretations (e.g., vase/faces)</li>
+          </ul>
+
+          <p><strong>Diffusion-Based Illusions:</strong></p>
+          <ul>
+            <li>Automatically generated through optimization</li>
+            <li>Leverage learned statistical patterns from millions of images</li>
+            <li>Can create more subtle, painterly illusions</li>
+            <li>Don't require explicit understanding of human perception</li>
+          </ul>
+
+          <p>
+            The diffusion approach discovers illusions through its learned understanding of visual semantics, rather than through explicit perceptual engineering.
+          </p>
+
+          <h4>Technical Challenges Overcome</h4>
+          <p>
+            Implementing visual anagrams required solving several technical challenges:
+          </p>
+
+          <p><strong>1. Memory Management:</strong></p>
+          <p>
+            The T4 GPU cannot hold both Stage 1 and Stage 2 simultaneously. We resolved this by:
+          </p>
+          <ul>
+            <li>Generating 64×64 illusions with Stage 1</li>
+            <li>Saving results as <code>.npy</code> files</li>
+            <li>Freeing GPU memory (<code>del stage_1; gc.collect(); torch.cuda.empty_cache()</code>)</li>
+            <li>Loading Stage 2 for upsampling</li>
+          </ul>
+
+          <p><strong>2. Tensor Manipulation:</strong></p>
+          <p>
+            Proper flipping requires attention to dimensions:
+          </p>
+          <ul>
+            <li><code>dims=[2]</code> flips height dimension (upside-down)</li>
+            <li>Must flip both input image and resulting noise estimate</li>
+            <li>Must maintain tensor shapes and data types throughout</li>
+          </ul>
+
+          <p><strong>3. Seed Management:</strong></p>
+          <p>
+            Finding good illusions requires:
+          </p>
+          <ul>
+            <li>Running multiple trials with different seeds</li>
+            <li>Selecting the best result from each set</li>
+            <li>Documenting seeds for reproducibility</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Part 3 Conclusions -->
+      <section class="section-block">
+        <h2>Part 3 Conclusions</h2>
+        <div class="summary-list">
+          <p>
+            Part 3 demonstrated that diffusion models can create sophisticated visual illusions by simultaneously optimizing for multiple objectives. The visual anagrams showcase several advanced capabilities:
+          </p>
+          <ol>
+            <li><strong>Multi-objective optimization:</strong> Averaging noise estimates implements a form of constraint satisfaction</li>
+            <li><strong>Compositional flexibility:</strong> The model finds creative compromises between conflicting prompts</li>
+            <li><strong>Style as ambiguity:</strong> Artistic styles provide the abstraction necessary for dual interpretation</li>
+            <li><strong>Quality vs. compatibility trade-off:</strong> More semantically similar prompts produce more convincing illusions</li>
+          </ol>
+          <p><strong>Key Achievements:</strong></p>
+          <ul>
+            <li>Successfully implemented the visual anagrams algorithm</li>
+            <li>Generated three working illusions across diverse prompt pairs</li>
+            <li>Upsampled to 256×256 while preserving the illusion effect</li>
+            <li>Demonstrated the flexibility of diffusion models for creative applications</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Project Conclusion -->
+      <section class="section-block">
+        <h2>Project Conclusion</h2>
+        <div class="summary-list">
+          <p>
+            This project systematically explored diffusion models from fundamental principles to advanced applications:
+          </p>
+          <p>
+            <strong>Part 1</strong> established the mathematical foundation&mdash;forward diffusion, the failure of classical methods, and the superiority of iterative learned denoising.
+          </p>
+          <p>
+            <strong>Part 2</strong> demonstrated practical techniques&mdash;sampling from noise, Classifier-Free Guidance for quality improvement, and noise-level control for editing.
+          </p>
+          <p>
+            <strong>Part 3</strong> showcased creative applications&mdash;visual anagrams that reveal diffusion models' capability for multi-objective optimization.
+          </p>
+          <p>
+            Together, these parts provide comprehensive understanding of why diffusion models work, how to use them effectively, and what creative possibilities they enable. The clear performance hierarchies (Gaussian blur &lt; one-step denoising &lt; iterative denoising; unconditional &lt; CFG) and intuitive control mechanisms (noise \(\propto\) edit strength; averaging \(\rightarrow\) multi-objective) demonstrate both the theoretical soundness and practical utility of the diffusion framework.
+          </p>
+        </div>
+      </section>
+
+
+    </article>
+  </div>
+
+  
+
+</body>
+</html>
 
